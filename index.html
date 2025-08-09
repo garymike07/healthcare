@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>HealthKenya — Enhanced Appointment System (Lite PWA)</title>
+
+  <!-- Minimal, mobile-first styles -->
+  <style>
+    :root{
+      --primary:#2E7D32;
+      --accent:#1565C0;
+      --bg:#ffffff;
+      --muted:#666;
+      --maxw:980px;
+      --gap:12px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:#f3f6f9;color:#111}
+    .app-shell{max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;min-height:100vh}
+    header.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg,var(--primary),#1b5e20);color:#fff}
+    header .brand{display:flex;gap:12px;align-items:center}
+    header h1{margin:0;font-size:1.1rem}
+    .lang-switch{display:flex;gap:6px}
+    .lang-btn{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 8px;border-radius:6px;cursor:pointer}
+    main{flex:1;padding:16px;display:grid;grid-template-columns:1fr;gap:14px}
+    .columns{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){ .columns{grid-template-columns:360px 1fr} }
+    .card{background:#fff;padding:12px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,0.04);border:1px solid #eee}
+    .muted{color:var(--muted);font-size:0.95rem}
+    .btn{display:inline-block;padding:10px 12px;border-radius:8px;border:none;background:var(--primary);color:#fff;cursor:pointer}
+    .btn.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
+    label{font-weight:600;font-size:0.95rem}
+    .provider-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid #f0f0f0;margin-bottom:8px}
+    .small{font-size:0.9rem}
+    .list{max-height:48vh;overflow:auto;padding-right:6px}
+    footer{padding:12px;text-align:center;color:var(--muted);font-size:0.9rem}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:10px 14px;border-radius:10px;background:#222;color:#fff;z-index:999;display:none}
+    .hidden{display:none}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .search{display:flex;gap:8px;align-items:center}
+    .kpi{display:flex;gap:8px;flex-wrap:wrap}
+    .kpi .tile{background:#fafafa;padding:8px;border-radius:8px;border:1px solid #eee;min-width:120px}
+    .slot{display:inline-block;padding:6px 8px;border-radius:6px;border:1px solid #ddd;margin:4px;cursor:pointer}
+    .slot.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .admin-badge{background:#fff;color:var(--primary);padding:4px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+    .center{display:flex;align-items:center;justify-content:center}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .notice{background:#fff3cd;border:1px solid #ffeeba;padding:8px;border-radius:8px;color:#856404}
+    .danger{background:#ffebee;border:1px solid #ffcdd2;color:#c62828;padding:8px;border-radius:8px}
+    .footer-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    /* Responsive improvements */
+    @media(max-width:480px){
+      header.topbar{padding:10px}
+      .btn{padding:8px 10px}
+    }
+  </style>
+
+  <meta name="theme-color" content="#2E7D32" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Minimal icons (user can replace) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%232E7D32\'%3E%3C/rect%3E%3Ctext x=\'50\' y=\'55\' font-size=\'48\' text-anchor=\'middle\' fill=\'white\' font-family=\'Arial\'%3EHK%3C/text%3E%3C/svg%3E">
+
+  <!-- Accessibility meta -->
+  <meta name="description" content="HealthKenya — enhanced appointment booking PWA. Multilingual, offline-first, M-Pesa ready (demo), provider directory, scheduling and reminders." />
+</head>
+<body>
+  <div class="app-shell" role="application" aria-label="HealthKenya Appointment System">
+    <header class="topbar" role="banner">
+      <div class="brand" role="link" tabindex="0" onclick="navigateHome()">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#fff" /><path d="M6 12h12" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/></svg>
+        <div>
+          <h1 id="app-title" style="margin:0">HealthKenya</h1>
+          <div class="small muted">Appointments • Providers • Telemedicine (demo)</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="lang-switch" role="navigation" aria-label="language">
+          <button class="lang-btn" id="btn-en" aria-pressed="true">EN</button>
+          <button class="lang-btn" id="btn-sw">SW</button>
+        </div>
+        <div id="adminControls" class="admin-badge" role="status" title="Admin mode off">User</div>
+      </div>
+    </header>
+
+    <main role="main">
+      <div class="columns">
+        <!-- LEFT COLUMN: Search, Provider Directory, Quick Actions -->
+        <section class="card" aria-labelledby="leftTitle">
+          <h2 id="leftTitle">Actions</h2>
+
+          <div class="toolbar" role="toolbar" aria-label="Quick actions">
+            <button class="btn" id="btn-new-booking">New Booking</button>
+            <button class="btn secondary" id="btn-my-appointments">My Appointments</button>
+            <button class="btn secondary" id="btn-providers">Providers</button>
+            <button class="btn secondary" id="btn-admin" title="Admin / provider onboarding">Admin</button>
+          </div>
+
+          <hr style="margin:12px 0"/>
+
+          <div class="muted small">Find provider or specialty</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <input id="search-input" type="search" placeholder="Search providers, specialty, county..." aria-label="Search providers" />
+            <button class="btn" id="search-btn">Search</button>
+          </div>
+
+          <h3 style="margin-top:12px">Nearby Providers</h3>
+          <div id="providerList" class="list" aria-live="polite"></div>
+
+          <div style="margin-top:10px">
+            <div class="muted small">Offline queue: <span id="outbox-count">0</span></div>
+            <div style="margin-top:6px">
+              <button class="btn secondary" id="btn-process-outbox">Process Outbox</button>
+              <button class="btn secondary" id="btn-export">Export Data</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Main views (booking, appointments, admin) -->
+        <section>
+          <!-- Notifications / quick KPIs -->
+          <div class="card" id="kpiCard" aria-hidden="false">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div class="kpi">
+                  <div class="tile"><div class="muted">Active Providers</div><div id="kpi-providers">0</div></div>
+                  <div class="tile"><div class="muted">Today Bookings</div><div id="kpi-today">0</div></div>
+                  <div class="tile"><div class="muted">Pending Outbox</div><div id="kpi-outbox">0</div></div>
+                </div>
+              </div>
+              <div class="small muted">App status: <span id="app-status">Online</span></div>
+            </div>
+          </div>
+
+          <!-- Main UI container -->
+          <div id="viewContainer" style="margin-top:12px"></div>
+
+        </section>
+      </div>
+
+      <!-- Hidden templates (used to render views) -->
+      <template id="tpl-booking">
+        <div class="card" id="view-booking" aria-labelledby="bookingTitle">
+          <h2 id="bookingTitle">Book Appointment</h2>
+          <form id="bookingForm">
+            <div style="display:grid;gap:10px">
+              <label for="sel-provider">Provider</label>
+              <select id="sel-provider" required></select>
+
+              <label for="sel-service">Service / Specialty</label>
+              <select id="sel-service"></select>
+
+              <label for="sel-date">Date</label>
+              <input id="sel-date" type="date" required />
+
+              <label>Available Slots</label>
+              <div id="slotList" class="small"></div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div>
+                  <label for="patient-name">Patient name</label>
+                  <input id="patient-name" type="text" required />
+                </div>
+                <div>
+                  <label for="patient-phone">Phone</label>
+                  <input id="patient-phone" type="tel" required />
+                </div>
+              </div>
+
+              <label for="group-count">Group (family) bookings</label>
+              <input id="group-count" type="number" min="1" value="1" />
+
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="chk-pay" type="checkbox" />
+                <label for="chk-pay" class="small">Initiate M-Pesa (demo / queued when offline)</label>
+              </div>
+
+              <div style="display:flex;gap:8px">
+                <button class="btn" id="btn-confirm-booking" type="submit">Confirm Booking</button>
+                <button type="button" class="btn secondary" id="btn-cancel-booking">Cancel</button>
+              </div>
+
+              <div id="booking-msg" class="muted small" role="status"></div>
+            </div>
+          </form>
+        </div>
+      </template>
+
+      <template id="tpl-appointments">
+        <div class="card" id="view-appointments" aria-labelledby="apptsTitle">
+          <h2 id="apptsTitle">My Appointments</h2>
+          <div class="muted small">You can reschedule, cancel, or export appointments</div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <input id="filter-input" placeholder="Filter by provider, date, type..." />
+            <button class="btn secondary" id="btn-refresh">Refresh</button>
+            <button class="btn secondary" id="btn-export-appts">Export</button>
+          </div>
+          <div id="apptList" class="list" style="margin-top:12px" aria-live="polite"></div>
+        </div>
+      </template>
+
+      <template id="tpl-provider-admin">
+        <div class="card" id="view-admin" aria-labelledby="adminTitle">
+          <h2 id="adminTitle">Admin / Provider Onboarding</h2>
+          <div class="muted small">Create or verify providers. For production, this becomes an authenticated admin flow.</div>
+
+          <form id="providerForm" style="margin-top:8px">
+            <label for="p-name">Provider name</label><input id="p-name" required />
+            <label for="p-specialty">Specialty</label><input id="p-specialty" required />
+            <label for="p-location">County / Location</label><input id="p-location" required />
+            <label for="p-slots">Default slots (comma separated, e.g. 08:00,09:00)</label><input id="p-slots" />
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button class="btn" id="btn-add-provider" type="button">Add Provider</button>
+              <button class="btn secondary" id="btn-scan-providers" type="button">Seed Sample Providers</button>
+            </div>
+          </form>
+
+          <h3 style="margin-top:12px">Existing Providers</h3>
+          <div id="admin-provider-list" class="list"></div>
+        </div>
+      </template>
+
+      <template id="tpl-analytics">
+        <div class="card" id="view-analytics" aria-labelledby="analyticsTitle">
+          <h2 id="analyticsTitle">Analytics (local)</h2>
+          <div class="muted small">This shows local analytics useful for providers and admin.</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px">
+            <div class="tile card">
+              <div class="muted small">Total Appointments</div>
+              <div id="stat-total">0</div>
+            </div>
+            <div class="tile card">
+              <div class="muted small">Upcoming (7 days)</div>
+              <div id="stat-upcoming">0</div>
+            </div>
+            <div class="tile card">
+              <div class="muted small">No-shows (simulated)</div>
+              <div id="stat-noshow">0</div>
+            </div>
+            <div class="tile card">
+              <div class="muted small">Avg bookings/day</div>
+              <div id="stat-avg">0</div>
+            </div>
+          </div>
+
+          <h3 style="margin-top:12px">Recent Activity</h3>
+          <div id="analytics-log" class="list small"></div>
+        </div>
+      </template>
+
+      <!-- Toast -->
+      <div id="toast" class="toast" role="status" aria-live="polite">...</div>
+    </main>
+
+    <footer>
+      <div class="footer-links">
+        <small>HealthKenya Lite — Demo • Deployable to GitHub Pages • Add serverless functions for M-Pesa / SMS</small>
+      </div>
+    </footer>
+  </div>
+
+  <!-- SCRIPT: All app logic in one file (modular functions, well-commented) -->
+  <script>
+  /**
+   * HealthKenya Lite — Single-file client app
+   * - IndexedDB for persistent storage (providers, appointments, outbox)
+   * - Offline outbox for queued payments & reminders
+   * - Multilanguage (EN/SW) + accessible UI
+   * - Admin/provider onboarding (local demo)
+   *
+   * IMPORTANT: For production, extract server-related flows to serverless functions:
+   *   - M-PESA Daraja (STK Push) must run server-side to keep keys secret
+   *   - SMS/WhatsApp notifications should be sent server-side (Twilio / Meta WhatsApp Business)
+   *
+   * Usage:
+   *  - Place this file in a GitHub Pages repo root; optionally add sw.js (inlined registration included below)
+   *  - Click "Admin" -> seed providers or add providers -> New Booking -> book
+   */
+
+  /* -----------------------
+     Utility & tiny DOM helpers
+     ----------------------- */
+  const $ = sel => document.querySelector(sel);
+  const $all = sel => Array.from(document.querySelectorAll(sel));
+  const el = (tag, attrs = {}, ...children) => {
+    const e = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v]) => { if (k === \'class\') e.className = v; else if (k.startsWith(\'on\')) e.addEventListener(k.slice(2), v); else e.setAttribute(k,v); });
+    for (const c of children) { if (typeof c === \'string\') e.appendChild(document.createTextNode(c)); else if (c) e.appendChild(c); }
+    return e;
+  };
+  function showToast(msg, ms=3000) {
+    const t = document.getElementById(\'toast\');
+    t.textContent = msg;
+    t.style.display = \'block\';
+    setTimeout(()=> t.style.display = \'none\', ms);
+  }
+
+  /* -----------------------
+     i18n (small) — extendable
+     ----------------------- */
+  const I18N = {
+    en: {
+      newBooking: \'New Booking\',
+      myAppointments: \'My Appointments\',
+      providers: \'Providers\',
+      admin: \'Admin\',
+      confirmBooking: \'Confirm Booking\',
+      cancel: \'Cancel\',
+      bookSuccess: \'Booking saved locally\',
+      queuedPayment: \'Payment queued in outbox (demo)\'
+    },
+    sw: {
+      newBooking: \'Weka Miadi\',
+      myAppointments: \'Miadi Zangu\',
+      providers: \'Watoa Huduma\',
+      admin: \'Utawala\',
+      confirmBooking: \'Thibitisha Miadi\',
+      cancel: \'Ghairi\',
+      bookSuccess: \'Miadi imehifadhiwa kwa kifaa\',
+      queuedPayment: \'Malipo yametumwa kwenye outbox (demo)\'
+    }
+  };
+  let lang = localStorage.getItem(\'hk_lang\') || \'en\';
+  function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N[\'en\'][k] || k; }
+  function applyLangUI(){
+    document.getElementById(\'btn-en\').ariaPressed = (lang===\'en\');
+    document.getElementById(\'btn-sw\').ariaPressed = (lang===\'sw\');
+    document.getElementById(\'btn-en\').classList.toggle(\'active\', lang===\'en\');
+    document.getElementById(\'btn-sw\').classList.toggle(\'active\', lang===\'sw\');
+    // a few text nodes — keep simple
+    document.getElementById(\'app-title\').textContent = lang === \'en\' ? \'HealthKenya\' : \'AfyaKenya\';
+    document.getElementById(\'btn-new-booking\').textContent = t(\'newBooking\');
+    document.getElementById(\'btn-my-appointments\').textContent = t(\'myAppointments\');
+    document.getElementById(\'btn-providers\').textContent = t(\'providers\');
+    document.getElementById(\'btn-admin\').textContent = t(\'admin\');
+    const confirmBtn = document.getElementById(\'btn-confirm-booking\');
+    if (confirmBtn) confirmBtn.textContent = t(\'confirmBooking\');
+    const cancelBtn = document.getElementById(\'btn-cancel-booking\');
+    if (cancelBtn) cancelBtn.textContent = t(\'cancel\');
+  }
+
+  /* -----------------------
+     IndexedDB setup
+     ----------------------- */
+  let db;
+  const DB_NAME = \'healthkenya_db\';
+  const DB_VERSION = 1;
+  const STORES = [\'providers\', \'appointments\', \'outbox\'];
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        STORES.forEach(storeName => {
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, { keyPath: \'id\', autoIncrement: true });
+          }
+        });
+      };
+      request.onsuccess = (event) => {
+        db = event.target.result;
+        resolve(db);
+      };
+      request.onerror = (event) => {
+        console.error(\'IndexedDB error:\', event.target.errorCode);
+        reject(event.target.errorCode);
+      };
+    });
+  }
+
+  async function addData(storeName, data) {
+    const tx = db.transaction(storeName, \'readwrite\');
+    const store = tx.objectStore(storeName);
+    await store.add(data);
+    return tx.complete;
+  }
+
+  async function getAllData(storeName) {
+    const tx = db.transaction(storeName, \'readonly\');
+    const store = tx.objectStore(storeName);
+    return store.getAll();
+  }
+
+  async function getDataById(storeName, id) {
+    const tx = db.transaction(storeName, \'readonly\');
+    const store = tx.objectStore(storeName);
+    return store.get(id);
+  }
+
+  async function updateData(storeName, data) {
+    const tx = db.transaction(storeName, \'readwrite\');
+    const store = tx.objectStore(storeName);
+    await store.put(data);
+    return tx.complete;
+  }
+
+  async function deleteData(storeName, id) {
+    const tx = db.transaction(storeName, \'readwrite\');
+    const store = tx.objectStore(storeName);
+    await store.delete(id);
+    return tx.complete;
+  }
+
+  /* -----------------------
+     Service Worker (PWA) registration
+     ----------------------- */
+  function registerServiceWorker() {
+    if (\'serviceWorker\' in navigator) {
+      window.addEventListener(\'load\', () => {
+        navigator.serviceWorker.register(\'/sw.js\')
+          .then(registration => {
+            console.log(\'SW registered: \', registration);
+          })
+          .catch(registrationError => {
+            console.log(\'SW registration failed: \', registrationError);
+          });
+      });
+    }
+  }
+
+  /* -----------------------
+     App State & Routing
+     ----------------------- */
+  const appState = {
+    currentView: \'home\',
+    selectedProvider: null,
+    selectedDate: null,
+    selectedSlot: null,
+    appointments: [],
+    providers: [],
+    outbox: []
+  };
+
+  function navigateTo(view) {
+    appState.currentView = view;
+    renderView();
+  }
+
+  function navigateHome() {
+    navigateTo(\'home\');
+  }
+
+  async function renderView() {
+    const viewContainer = $(\'#viewContainer\');
+    viewContainer.innerHTML = \'\'; // Clear current view
+
+    // Hide KPI card for certain views
+    if ([\'booking\', \'provider-admin\', \'analytics\'].includes(appState.currentView)) {
+      $(\'#kpiCard\').setAttribute(\'aria-hidden\', \'true\');
+      $(\'#kpiCard\').style.display = \'none\';
+    } else {
+      $(\'#kpiCard\').setAttribute(\'aria-hidden\', \'false\');
+      $(\'#kpiCard\').style.display = \'block\';
+    }
+
+    switch (appState.currentView) {
+      case \'home\':
+        await renderHomeView();
+        break;
+      case \'booking\':
+        await renderBookingView();
+        break;
+      case \'appointments\':
+        await renderAppointmentsView();
+        break;
+      case \'provider-admin\':
+        await renderProviderAdminView();
+        break;
+      case \'analytics\':
+        await renderAnalyticsView();
+        break;
+      default:
+        renderHomeView();
+    }
+    updateKPIs();
+  }
+
+  /* -----------------------
+     Home View (Provider Directory)
+     ----------------------- */
+  async function renderHomeView() {
+    const providerListEl = $(\'#providerList\');
+    providerListEl.innerHTML = \'\';
+    appState.providers = await getAllData(\'providers\');
+
+    if (appState.providers.length === 0) {
+      providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No providers found. Go to Admin to add some.\'));
+    }
+
+    appState.providers.forEach(provider => {
+      providerListEl.appendChild(el(\'div\', {class:\'provider-item\'}, 
+        el(\'div\', {}, 
+          el(\'div\', {}, provider.name),
+          el(\'div\', {class:\'small muted\'}, `${provider.specialty} - ${provider.location}`)
+        ),
+        el(\'button\', {class:\'btn secondary small\', onclick: () => {
+          appState.selectedProvider = provider;
+          navigateTo(\'booking\');
+        }}, \'Book\')
+      ));
+    });
+  }
+
+  /* -----------------------
+     Booking View
+     ----------------------- */
+  async function renderBookingView() {
+    const template = $(\'#tpl-booking\');
+    const clone = template.content.cloneNode(true);
+    $(\'#viewContainer\').appendChild(clone);
+
+    const selProvider = $(\'#sel-provider\');
+    selProvider.innerHTML = \'\';
+    appState.providers.forEach(p => {
+      selProvider.appendChild(el(\'option\', {value: p.id, selected: appState.selectedProvider && p.id === appState.selectedProvider.id}, p.name));
+    });
+    if (appState.selectedProvider) {
+      selProvider.value = appState.selectedProvider.id;
+    }
+
+    const selDate = $(\'#sel-date\');
+    selDate.min = new Date().toISOString().split(\'T\')[0]; // Today or later
+    selDate.value = appState.selectedDate || selDate.min;
+
+    const slotList = $(\'#slotList\');
+    const bookingForm = $(\'#bookingForm\');
+
+    const updateSlots = async () => {
+      slotList.innerHTML = \'\';
+      const currentProvider = appState.providers.find(p => p.id == selProvider.value);
+      const defaultSlots = currentProvider.slots ? currentProvider.slots.split(\' \').map(s => s.trim()) : [\'09:00\', \'10:00\', \'11:00\', \'14:00\', \'15:00\'];
+      
+      // Simulate occupied slots (for demo purposes)
+      const occupiedSlots = appState.appointments
+        .filter(appt => appt.providerId == selProvider.value && appt.date === selDate.value)
+        .map(appt => appt.time);
+
+      defaultSlots.forEach(slot => {
+        const isOccupied = occupiedSlots.includes(slot);
+        const slotEl = el(\'span\', {class:\'slot\', \'data-slot\':slot, onclick: () => {
+          if (!isOccupied) {
+            $all(\'.slot\').forEach(s => s.classList.remove(\'selected\'));
+            slotEl.classList.add(\'selected\');
+            appState.selectedSlot = slot;
+          }
+        }}, slot);
+        if (isOccupied) {
+          slotEl.classList.add(\'muted\');
+          slotEl.style.textDecoration = \'line-through\';
+        }
+        slotList.appendChild(slotEl);
+      });
+      appState.selectedSlot = null; // Reset selected slot on date/provider change
+    };
+
+    selProvider.onchange = updateSlots;
+    selDate.onchange = updateSlots;
+    await updateSlots();
+
+    bookingForm.onsubmit = async (e) => {
+      e.preventDefault();
+      if (!appState.selectedSlot) {
+        showToast(\'Please select a time slot.\');
+        return;
+      }
+
+      const newAppointment = {
+        providerId: selProvider.value,
+        providerName: selProvider.options[selProvider.selectedIndex].text,
+        service: $(\'#sel-service\').value || \'General Consultation\',
+        date: selDate.value,
+        time: appState.selectedSlot,
+        patientName: $(\'#patient-name\').value,
+        patientPhone: $(\'#patient-phone\').value,
+        groupCount: parseInt($(\'#group-count\').value) || 1,
+        timestamp: new Date().toISOString()
+      };
+
+      await addData(\'appointments\', newAppointment);
+      showToast(t(\'bookSuccess\'));
+      
+      if ($(\'#chk-pay\').checked) {
+        await addData(\'outbox\', {type:\'mpesa_payment\', appointment: newAppointment, status:\'pending\'});
+        showToast(t(\'queuedPayment\'), 5000);
+      }
+
+      appState.appointments = await getAllData(\'appointments\'); // Refresh appointments
+      updateKPIs();
+      navigateTo(\'appointments\');
+    };
+
+    $(\'#btn-cancel-booking\').onclick = () => navigateTo(\'home\');
+  }
+
+  /* -----------------------
+     Appointments View
+     ----------------------- */
+  async function renderAppointmentsView() {
+    const template = $(\'#tpl-appointments\');
+    const clone = template.content.cloneNode(true);
+    $(\'#viewContainer\').appendChild(clone);
+
+    const apptListEl = $(\'#apptList\');
+    apptListEl.innerHTML = \'\';
+    appState.appointments = await getAllData(\'appointments\');
+
+    if (appState.appointments.length === 0) {
+      apptListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No appointments booked yet.\'));
+    }
+
+    appState.appointments.sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+    appState.appointments.forEach(appt => {
+      apptListEl.appendChild(el(\'div\', {class:\'card provider-item\'}, 
+        el(\'div\', {}, 
+          el(\'div\', {}, `Dr. ${appt.providerName}`),
+          el(\'div\', {class:\'small muted\'}, `${appt.service} on ${appt.date} at ${appt.time}`),
+          el(\'div\', {class:\'small muted\'}, `Patient: ${appt.patientName} (${appt.patientPhone})`)
+        ),
+        el(\'div\', {}, 
+          el(\'button\', {class:\'btn secondary small\', onclick: async () => {
+            if (confirm(\'Cancel this appointment?\')) {
+              await deleteData(\'appointments\', appt.id);
+              showToast(\'Appointment cancelled.\');
+              appState.appointments = await getAllData(\'appointments\');
+              renderAppointmentsView();
+              updateKPIs();
+            }
+          }}, \'Cancel\')
+        )
+      ));
+    });
+
+    $(\'#btn-refresh\').onclick = renderAppointmentsView;
+    $(\'#btn-export-appts\').onclick = exportAppointments;
+  }
+
+  function exportAppointments() {
+    const csvContent = \'data:text/csv;charset=utf-8,\' 
+      + \'ID,Provider,Service,Date,Time,Patient Name,Patient Phone,Group Count,Timestamp\n\'
+      + appState.appointments.map(a => 
+          `\"${a.id}\",\"${a.providerName}\",\"${a.service}\",\"${a.date}\",\"${a.time}\",\"${a.patientName}\",\"${a.patientPhone}\",\"${a.groupCount}\",\"${a.timestamp}\"`
+        ).join(\'\n\');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement(\'a\');
+    link.setAttribute(\'href\', encodedUri);
+    link.setAttribute(\'download\', \'appointments.csv\');
+    document.body.appendChild(link); 
+    link.click();
+    document.body.removeChild(link);
+    showToast(\'Appointments exported to CSV.\');
+  }
+
+  /* -----------------------
+     Provider Admin View
+     ----------------------- */
+  async function renderProviderAdminView() {
+    const template = $(\'#tpl-provider-admin\');
+    const clone = template.content.cloneNode(true);
+    $(\'#viewContainer\').appendChild(clone);
+
+    const providerListEl = $(\'#admin-provider-list\');
+    const providerForm = $(\'#providerForm\');
+
+    const refreshProviderList = async () => {
+      providerListEl.innerHTML = \'\';
+      appState.providers = await getAllData(\'providers\');
+      if (appState.providers.length === 0) {
+        providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No providers added yet.\'));
+      }
+      appState.providers.forEach(p => {
+        providerListEl.appendChild(el(\'div\', {class:\'card provider-item\'}, 
+          el(\'div\', {}, 
+            el(\'div\', {}, p.name),
+            el(\'div\', {class:\'small muted\'}, `${p.specialty} - ${p.location}`)
+          ),
+          el(\'button\', {class:\'btn secondary small\', onclick: async () => {
+            if (confirm(\'Delete this provider?\')) {
+              await deleteData(\'providers\', p.id);
+              showToast(\'Provider deleted.\');
+              refreshProviderList();
+              updateKPIs();
+            }
+          }}, \'Delete\')
+        ));
+      });
+    };
+
+    $(\'#btn-add-provider\').onclick = async () => {
+      const newProvider = {
+        name: $(\'#p-name\').value,
+        specialty: $(\'#p-specialty\').value,
+        location: $(\'#p-location\').value,
+        slots: $(\'#p-slots\').value || \'09:00 10:00 11:00 14:00 15:00\'
+      };
+      if (!newProvider.name || !newProvider.specialty || !newProvider.location) {
+        showToast(\'Please fill all required fields.\');
+        return;
+      }
+      await addData(\'providers\', newProvider);
+      showToast(\'Provider added.\');
+      providerForm.reset();
+      refreshProviderList();
+      updateKPIs();
+    };
+
+    $(\'#btn-scan-providers\').onclick = async () => {
+      const sampleProviders = [
+        { name: \'Dr. Jane Doe\', specialty: \'General Practitioner\', location: \'Nairobi\', slots: \'08:00 09:00 10:00 11:00 14:00 15:00\' },
+        { name: \'Dr. John Smith\', specialty: \'Pediatrician\', location: \'Mombasa\', slots: \'09:00 10:00 11:00 13:00 14:00\' },
+        { name: \'Dr. Emily White\', specialty: \'Dermatologist\', location: \'Kisumu\', slots: \'10:00 11:00 12:00 15:00 16:00\' }
+      ];
+      for (const p of sampleProviders) {
+        await addData(\'providers\', p);
+      }
+      showToast(\'Sample providers seeded.\');
+      refreshProviderList();
+      updateKPIs();
+    };
+
+    await refreshProviderList();
+  }
+
+  /* -----------------------
+     Analytics View
+     ----------------------- */
+  async function renderAnalyticsView() {
+    const template = $(\'#tpl-analytics\');
+    const clone = template.content.cloneNode(true);
+    $(\'#viewContainer\').appendChild(clone);
+
+    const totalAppts = appState.appointments.length;
+    $(\'#stat-total\').textContent = totalAppts;
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const upcomingAppts = appState.appointments.filter(appt => {
+      const apptDate = new Date(appt.date);
+      apptDate.setHours(0,0,0,0);
+      return apptDate >= today && (apptDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 7;
+    }).length;
+    $(\'#stat-upcoming\').textContent = upcomingAppts;
+
+    // Simulate no-shows (e.g., 10% of past appointments)
+    const pastAppts = appState.appointments.filter(appt => {
+      const apptDate = new Date(appt.date);
+      apptDate.setHours(0,0,0,0);
+      return apptDate < today;
+    }).length;
+    $(\'#stat-noshow\').textContent = Math.floor(pastAppts * 0.1);
+
+    const apptsPerDay = {};
+    appState.appointments.forEach(appt => {
+      apptsPerDay[appt.date] = (apptsPerDay[appt.date] || 0) + 1;
+    });
+    const uniqueDays = Object.keys(apptsPerDay).length;
+    $(\'#stat-avg\').textContent = uniqueDays > 0 ? (totalAppts / uniqueDays).toFixed(1) : 0;
+
+    const analyticsLogEl = $(\'#analytics-log\');
+    analyticsLogEl.innerHTML = \'\';
+    appState.appointments.slice(-10).reverse().forEach(appt => {
+      analyticsLogEl.appendChild(el(\'div\', {}, `[${new Date(appt.timestamp).toLocaleDateString()}] New booking for ${appt.patientName} with Dr. ${appt.providerName} on ${appt.date}`));
+    });
+  }
+
+  /* -----------------------
+     KPI Updates
+     ----------------------- */
+  async function updateKPIs() {
+    appState.providers = await getAllData(\'providers\');
+    appState.appointments = await getAllData(\'appointments\');
+    appState.outbox = await getAllData(\'outbox\');
+
+    $(\'#kpi-providers\').textContent = appState.providers.length;
+    
+    const today = new Date().toISOString().split(\'T\')[0];
+    const todayBookings = appState.appointments.filter(appt => appt.date === today).length;
+    $(\'#kpi-today\').textContent = todayBookings;
+
+    $(\'#kpi-outbox\').textContent = appState.outbox.length;
+    $(\'#outbox-count\').textContent = appState.outbox.length;
+
+    // Update app status based on network connectivity
+    $(\'#app-status\').textContent = navigator.onLine ? \'Online\' : \'Offline\';
+  }
+
+  /* -----------------------
+     Event Listeners
+     ----------------------- */
+  function setupEventListeners() {
+    $(\'#btn-new-booking\').onclick = () => navigateTo(\'booking\');
+    $(\'#btn-my-appointments\').onclick = () => navigateTo(\'appointments\');
+    $(\'#btn-providers\').onclick = () => navigateTo(\'home\');
+    $(\'#btn-admin\').onclick = () => navigateTo(\'provider-admin\');
+    $(\'#btn-process-outbox\').onclick = processOutbox;
+    $(\'#btn-export\').onclick = exportAllData;
+
+    $(\'#btn-en\').onclick = () => { lang = \'en\'; localStorage.setItem(\'hk_lang\', \'en\'); applyLangUI(); renderView(); };
+    $(\'#btn-sw\').onclick = () => { lang = \'sw\'; localStorage.setItem(\'hk_lang\', \'sw\'); applyLangUI(); renderView(); };
+
+    $(\'#search-btn\').onclick = filterProviders;
+    $(\'#search-input\').onkeyup = (e) => { if (e.key === \'Enter\') filterProviders(); };
+
+    // Basic admin mode toggle (for demo)
+    $(\'#adminControls\').onclick = () => {
+      const isAdmin = $(\'#adminControls\').textContent === \'Admin\';
+      $(\'#adminControls\').textContent = isAdmin ? \'User\' : \'Admin\';
+      $(\'#adminControls\').title = isAdmin ? \'Admin mode off\' : \'Admin mode on\';
+      // In a real app, this would involve authentication and role-based access
+      showToast(isAdmin ? \'Admin mode disabled\' : \'Admin mode enabled\');
+    };
+
+    window.addEventListener(\'online\', updateKPIs);
+    window.addEventListener(\'offline\', updateKPIs);
+  }
+
+  async function filterProviders() {
+    const query = $(\'#search-input\').value.toLowerCase();
+    const providerListEl = $(\'#providerList\');
+    providerListEl.innerHTML = \'\';
+
+    const filteredProviders = appState.providers.filter(p => 
+      p.name.toLowerCase().includes(query) ||
+      p.specialty.toLowerCase().includes(query) ||
+      p.location.toLowerCase().includes(query)
+    );
+
+    if (filteredProviders.length === 0) {
+      providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No matching providers found.\'));
+    }
+
+    filteredProviders.forEach(provider => {
+      providerListEl.appendChild(el(\'div\', {class:\'provider-item\'}, 
+        el(\'div\', {}, 
+          el(\'div\', {}, provider.name),
+          el(\'div\', {class:\'small muted\'}, `${provider.specialty} - ${provider.location}`)
+        ),
+        el(\'button\', {class:\'btn secondary small\', onclick: () => {
+          appState.selectedProvider = provider;
+          navigateTo(\'booking\');
+        }}, \'Book\')
+      ));
+    });
+  }
+
+  async function processOutbox() {
+    if (appState.outbox.length === 0) {
+      showToast(\'Outbox is empty.\');
+      return;
+    }
+    showToast(`Processing ${appState.outbox.length} items in outbox... (demo)`);
+    for (const item of appState.outbox) {
+      // Simulate sending data to a server
+      console.log(\'Processing outbox item:\', item);
+      // In a real app, you\'d send this to your backend and await success
+      // For demo, we\'ll just delete it after a short delay
+      await deleteData(\'outbox\', item.id);
+    }
+    appState.outbox = await getAllData(\'outbox\');
+    updateKPIs();
+    showToast(\'Outbox processed.\');
+  }
+
+  async function exportAllData() {
+    const allData = {
+      providers: await getAllData(\'providers\'),
+      appointments: await getAllData(\'appointments\'),
+      outbox: await getAllData(\'outbox\')
+    };
+    const jsonContent = \'data:application/json;charset=utf-8,\' + JSON.stringify(allData, null, 2);
+    const encodedUri = encodeURI(jsonContent);
+    const link = document.createElement(\'a\');
+    link.setAttribute(\'href\', encodedUri);
+    link.setAttribute(\'download\', \'healthkenya_data.json\');
+    document.body.appendChild(link); 
+    link.click();
+    document.body.removeChild(link);
+    showToast(\'All data exported to JSON.\');
+  }
+
+  /* -----------------------
+     Initialization
+     ----------------------- */
+  async function init() {
+    applyLangUI();
+    setupEventListeners();
+    await openDB();
+    await renderView();
+    registerServiceWorker();
+  }
+
+  init();
+  </script>
+</body>
+</html>
+
+
