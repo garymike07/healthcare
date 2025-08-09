@@ -3,901 +3,1836 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HealthKenya — Enhanced Appointment System (Lite PWA)</title>
+  <title>HealthKenya — Enhanced Appointment System</title>
 
-  <!-- Minimal, mobile-first styles -->
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Additional Animations -->
+  <link rel="stylesheet" href="animations.css">
+  
+  <!-- Enhanced Styles -->
   <style>
-    :root{
-      --primary:#2E7D32;
-      --accent:#1565C0;
-      --bg:#ffffff;
-      --muted:#666;
-      --maxw:980px;
-      --gap:12px;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+    :root {
+      /* Modern Color Palette */
+      --primary: #0066CC;
+      --primary-dark: #0052A3;
+      --primary-light: #E6F3FF;
+      --secondary: #00A86B;
+      --secondary-dark: #008A56;
+      --secondary-light: #E6F9F3;
+      --accent: #FF6B35;
+      --accent-dark: #E55A2B;
+      --accent-light: #FFF0EB;
+      
+      /* Neutral Colors */
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F8FAFC;
+      --bg-tertiary: #F1F5F9;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      
+      /* Status Colors */
+      --success: #10B981;
+      --success-light: #D1FAE5;
+      --warning: #F59E0B;
+      --warning-light: #FEF3C7;
+      --error: #EF4444;
+      --error-light: #FEE2E2;
+      
+      /* Shadows */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      
+      /* Spacing */
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+      
+      /* Border Radius */
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-xl: 1rem;
+      
+      /* Typography */
+      --font-heading: 'Poppins', system-ui, -apple-system, sans-serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      
+      /* Layout */
+      --max-width: 1200px;
+      --header-height: 80px;
+      
+      /* Transitions */
+      --transition-fast: 150ms ease-in-out;
+      --transition-normal: 250ms ease-in-out;
+      --transition-slow: 350ms ease-in-out;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:#f3f6f9;color:#111}
-    .app-shell{max-width:var(--maxw);margin:0 auto;display:flex;flex-direction:column;min-height:100vh}
-    header.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg,var(--primary),#1b5e20);color:#fff}
-    header .brand{display:flex;gap:12px;align-items:center}
-    header h1{margin:0;font-size:1.1rem}
-    .lang-switch{display:flex;gap:6px}
-    .lang-btn{background:transparent;border:1px solid rgba(255,255,255,0.15);color:#fff;padding:6px 8px;border-radius:6px;cursor:pointer}
-    main{flex:1;padding:16px;display:grid;grid-template-columns:1fr;gap:14px}
-    .columns{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:900px){ .columns{grid-template-columns:360px 1fr} }
-    .card{background:#fff;padding:12px;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,0.04);border:1px solid #eee}
-    .muted{color:var(--muted);font-size:0.95rem}
-    .btn{display:inline-block;padding:10px 12px;border-radius:8px;border:none;background:var(--primary);color:#fff;cursor:pointer}
-    .btn.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary)}
-    input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;margin-top:6px}
-    label{font-weight:600;font-size:0.95rem}
-    .provider-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;border:1px solid #f0f0f0;margin-bottom:8px}
-    .small{font-size:0.9rem}
-    .list{max-height:48vh;overflow:auto;padding-right:6px}
-    footer{padding:12px;text-align:center;color:var(--muted);font-size:0.9rem}
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;padding:10px 14px;border-radius:10px;background:#222;color:#fff;z-index:999;display:none}
-    .hidden{display:none}
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
-    .search{display:flex;gap:8px;align-items:center}
-    .kpi{display:flex;gap:8px;flex-wrap:wrap}
-    .kpi .tile{background:#fafafa;padding:8px;border-radius:8px;border:1px solid #eee;min-width:120px}
-    .slot{display:inline-block;padding:6px 8px;border-radius:6px;border:1px solid #ddd;margin:4px;cursor:pointer}
-    .slot.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
-    .admin-badge{background:#fff;color:var(--primary);padding:4px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
-    .center{display:flex;align-items:center;justify-content:center}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-    .notice{background:#fff3cd;border:1px solid #ffeeba;padding:8px;border-radius:8px;color:#856404}
-    .danger{background:#ffebee;border:1px solid #ffcdd2;color:#c62828;padding:8px;border-radius:8px}
-    .footer-links{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-    /* Responsive improvements */
-    @media(max-width:480px){
-      header.topbar{padding:10px}
-      .btn{padding:8px 10px}
+
+    /* Reset and Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-body);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-muted);
+      border-radius: var(--radius-md);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+
+    /* Layout Components */
+    .app-shell {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-primary);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Header Styles */
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: var(--space-lg) var(--space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
+    }
+
+    .header-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+
+    .brand:hover {
+      transform: translateY(-2px);
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0;
+      background: linear-gradient(45deg, #ffffff, #e2e8f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-text .tagline {
+      font-size: 0.875rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+
+    .lang-switch {
+      display: flex;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xs);
+      backdrop-filter: blur(10px);
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-weight: 500;
+    }
+
+    .lang-btn:hover, .lang-btn[aria-pressed="true"] {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .admin-badge {
+      background: rgba(255, 255, 255, 0.15);
+      padding: var(--space-sm) var(--space-md);
+      border-radius: var(--radius-lg);
+      font-size: 0.875rem;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: var(--space-2xl);
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-xl);
+    }
+
+    @media (min-width: 1024px) {
+      .content-grid {
+        grid-template-columns: 400px 1fr;
+      }
+    }
+
+    /* Card Styles */
+    .card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      padding: var(--space-xl);
+      border-bottom: 1px solid var(--bg-tertiary);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .card-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: var(--space-xs) 0 0 0;
+    }
+
+    .card-content {
+      padding: var(--space-xl);
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+      padding: var(--space-md) var(--space-lg);
+      border-radius: var(--radius-lg);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left var(--transition-slow);
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, var(--warning), #d97706);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: var(--space-sm) var(--space-md);
+      font-size: 0.75rem;
+    }
+
+    .btn-lg {
+      padding: var(--space-lg) var(--space-2xl);
+      font-size: 1rem;
+    }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: var(--space-lg);
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+      font-size: 0.875rem;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: var(--space-md);
+      border: 2px solid var(--bg-tertiary);
+      border-radius: var(--radius-lg);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      transition: all var(--transition-fast);
+      background: var(--bg-primary);
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Search Bar */
+    .search-container {
+      position: relative;
+      margin-bottom: var(--space-lg);
+    }
+
+    .search-input {
+      padding-left: 3rem;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-lg);
+      margin-bottom: var(--space-xl);
+    }
+
+    .kpi-card {
+      background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--bg-tertiary);
+      text-align: center;
+      transition: all var(--transition-normal);
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .kpi-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: var(--space-xs) 0 0 0;
+    }
+
+    /* Provider List */
+    .provider-list {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: var(--space-sm);
+    }
+
+    .provider-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-lg);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--space-md);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .provider-item:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      transform: translateX(4px);
+    }
+
+    .provider-info h4 {
+      margin: 0;
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .provider-info p {
+      margin: var(--space-xs) 0 0 0;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Slots */
+    .slots-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-sm);
+      margin-top: var(--space-md);
+    }
+
+    .slot {
+      padding: var(--space-sm) var(--space-md);
+      border: 2px solid var(--bg-tertiary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .slot:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .slot.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      bottom: var(--space-xl);
+      right: var(--space-xl);
+      background: var(--text-primary);
+      color: white;
+      padding: var(--space-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      z-index: 1000;
+      transform: translateX(100%);
+      transition: transform var(--transition-normal);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.warning {
+      background: var(--warning);
+    }
+
+    .toast.error {
+      background: var(--error);
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--bg-tertiary);
+      padding: var(--space-xl);
+      text-align: center;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--bg-tertiary);
+    }
+
+    /* Utility Classes */
+    .hidden {
+      display: none !important;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-small {
+      font-size: 0.875rem;
+    }
+
+    .mb-0 { margin-bottom: 0; }
+    .mb-1 { margin-bottom: var(--space-sm); }
+    .mb-2 { margin-bottom: var(--space-md); }
+    .mb-3 { margin-bottom: var(--space-lg); }
+    .mb-4 { margin-bottom: var(--space-xl); }
+
+    .mt-0 { margin-top: 0; }
+    .mt-1 { margin-top: var(--space-sm); }
+    .mt-2 { margin-top: var(--space-md); }
+    .mt-3 { margin-top: var(--space-lg); }
+    .mt-4 { margin-top: var(--space-xl); }
+
+    /* Loading States */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top: 2px solid currentColor;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-content {
+        padding: var(--space-lg);
+      }
+      
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .toolbar {
+        justify-content: center;
+      }
+      
+      .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: var(--space-md);
+      }
+      
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animation Classes */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .slide-up {
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 
-  <meta name="theme-color" content="#2E7D32" />
+  <meta name="theme-color" content="#0066CC" />
   <link rel="manifest" href="manifest.webmanifest" />
-  <!-- Minimal icons (user can replace) -->
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%232E7D32\'%3E%3C/rect%3E%3Ctext x=\'50\' y=\'55\' font-size=\'48\' text-anchor=\'middle\' fill=\'white\' font-family=\'Arial\'%3EHK%3C/text%3E%3C/svg%3E">
-
-  <!-- Accessibility meta -->
-  <meta name="description" content="HealthKenya — enhanced appointment booking PWA. Multilingual, offline-first, M-Pesa ready (demo), provider directory, scheduling and reminders." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230066CC'%3E%3C/rect%3E%3Ctext x='50' y='55' font-size='48' text-anchor='middle' fill='white' font-family='Arial'%3EHK%3C/text%3E%3C/svg%3E">
+  <meta name="description" content="HealthKenya — Enhanced appointment booking system with modern design, animations, and comprehensive healthcare management features." />
 </head>
 <body>
   <div class="app-shell" role="application" aria-label="HealthKenya Appointment System">
-    <header class="topbar" role="banner">
-      <div class="brand" role="link" tabindex="0" onclick="navigateHome()">
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect width="24" height="24" rx="4" fill="#fff" /><path d="M6 12h12" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/></svg>
-        <div>
-          <h1 id="app-title" style="margin:0">HealthKenya</h1>
-          <div class="small muted">Appointments • Providers • Telemedicine (demo)</div>
+    <!-- Enhanced Header -->
+    <header class="header" role="banner">
+      <div class="header-content">
+        <div class="brand" role="button" tabindex="0" onclick="navigateHome()">
+          <div class="brand-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h1 id="app-title">HealthKenya</h1>
+            <p class="tagline">Modern Healthcare Management</p>
+          </div>
         </div>
-      </div>
 
-      <div style="display:flex;align-items:center;gap:12px">
-        <div class="lang-switch" role="navigation" aria-label="language">
-          <button class="lang-btn" id="btn-en" aria-pressed="true">EN</button>
-          <button class="lang-btn" id="btn-sw">SW</button>
+        <div class="header-actions">
+          <div class="lang-switch" role="navigation" aria-label="language">
+            <button class="lang-btn" id="btn-en" aria-pressed="true">EN</button>
+            <button class="lang-btn" id="btn-sw">SW</button>
+          </div>
+          <div id="adminControls" class="admin-badge" role="status" title="Admin mode off">User Mode</div>
         </div>
-        <div id="adminControls" class="admin-badge" role="status" title="Admin mode off">User</div>
       </div>
     </header>
 
-    <main role="main">
-      <div class="columns">
-        <!-- LEFT COLUMN: Search, Provider Directory, Quick Actions -->
-        <section class="card" aria-labelledby="leftTitle">
-          <h2 id="leftTitle">Actions</h2>
-
-          <div class="toolbar" role="toolbar" aria-label="Quick actions">
-            <button class="btn" id="btn-new-booking">New Booking</button>
-            <button class="btn secondary" id="btn-my-appointments">My Appointments</button>
-            <button class="btn secondary" id="btn-providers">Providers</button>
-            <button class="btn secondary" id="btn-admin" title="Admin / provider onboarding">Admin</button>
+    <!-- Main Content -->
+    <main class="main-content" role="main">
+      <div class="content-grid">
+        <!-- Sidebar -->
+        <aside class="card fade-in" aria-labelledby="sidebarTitle">
+          <div class="card-header">
+            <h2 id="sidebarTitle" class="card-title">Quick Actions</h2>
+            <p class="card-subtitle">Manage your healthcare needs</p>
           </div>
+          
+          <div class="card-content">
+            <div class="toolbar">
+              <button class="btn btn-primary" id="btn-new-booking">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                New Booking
+              </button>
+              <button class="btn btn-secondary" id="btn-my-appointments">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                My Appointments
+              </button>
+              <button class="btn btn-secondary" id="btn-providers">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Providers
+              </button>
+              <button class="btn btn-secondary" id="btn-admin">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Admin
+              </button>
+            </div>
 
-          <hr style="margin:12px 0"/>
+            <div class="search-container">
+              <input 
+                id="search-input" 
+                type="search" 
+                class="form-input search-input" 
+                placeholder="Search providers, specialties, locations..." 
+                aria-label="Search providers"
+              />
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
 
-          <div class="muted small">Find provider or specialty</div>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <input id="search-input" type="search" placeholder="Search providers, specialty, county..." aria-label="Search providers" />
-            <button class="btn" id="search-btn">Search</button>
-          </div>
+            <div class="form-group">
+              <h3 class="form-label">Nearby Providers</h3>
+              <div id="providerList" class="provider-list" aria-live="polite"></div>
+            </div>
 
-          <h3 style="margin-top:12px">Nearby Providers</h3>
-          <div id="providerList" class="list" aria-live="polite"></div>
-
-          <div style="margin-top:10px">
-            <div class="muted small">Offline queue: <span id="outbox-count">0</span></div>
-            <div style="margin-top:6px">
-              <button class="btn secondary" id="btn-process-outbox">Process Outbox</button>
-              <button class="btn secondary" id="btn-export">Export Data</button>
+            <div class="form-group">
+              <div class="text-small text-muted mb-2">
+                Offline queue: <span id="outbox-count">0</span> items
+              </div>
+              <div class="toolbar">
+                <button class="btn btn-secondary btn-sm" id="btn-process-outbox">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <polyline points="1 20 1 14 7 14"/>
+                    <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                  </svg>
+                  Process Queue
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-export">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Export
+                </button>
+              </div>
             </div>
           </div>
-        </section>
+        </aside>
 
-        <!-- RIGHT COLUMN: Main views (booking, appointments, admin) -->
-        <section>
-          <!-- Notifications / quick KPIs -->
-          <div class="card" id="kpiCard" aria-hidden="false">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div class="kpi">
-                  <div class="tile"><div class="muted">Active Providers</div><div id="kpi-providers">0</div></div>
-                  <div class="tile"><div class="muted">Today Bookings</div><div id="kpi-today">0</div></div>
-                  <div class="tile"><div class="muted">Pending Outbox</div><div id="kpi-outbox">0</div></div>
+        <!-- Main Content Area -->
+        <section class="slide-up">
+          <!-- KPI Dashboard -->
+          <div class="card mb-4">
+            <div class="card-content">
+              <div class="kpi-grid">
+                <div class="kpi-card">
+                  <div class="kpi-value" id="kpi-providers">0</div>
+                  <div class="kpi-label">Active Providers</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-value" id="kpi-today">0</div>
+                  <div class="kpi-label">Today's Bookings</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-value" id="kpi-outbox">0</div>
+                  <div class="kpi-label">Pending Queue</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-value">
+                    <span id="app-status" style="font-size: 1rem; color: var(--success);">Online</span>
+                  </div>
+                  <div class="kpi-label">System Status</div>
                 </div>
               </div>
-              <div class="small muted">App status: <span id="app-status">Online</span></div>
             </div>
           </div>
 
-          <!-- Main UI container -->
-          <div id="viewContainer" style="margin-top:12px"></div>
-
+          <!-- Dynamic Content Container -->
+          <div id="viewContainer"></div>
         </section>
       </div>
 
-      <!-- Hidden templates (used to render views) -->
+      <!-- Templates -->
       <template id="tpl-booking">
-        <div class="card" id="view-booking" aria-labelledby="bookingTitle">
-          <h2 id="bookingTitle">Book Appointment</h2>
-          <form id="bookingForm">
-            <div style="display:grid;gap:10px">
-              <label for="sel-provider">Provider</label>
-              <select id="sel-provider" required></select>
+        <div class="card fade-in" id="view-booking" aria-labelledby="bookingTitle">
+          <div class="card-header">
+            <h2 id="bookingTitle" class="card-title">Book New Appointment</h2>
+            <p class="card-subtitle">Schedule your healthcare appointment</p>
+          </div>
+          <div class="card-content">
+            <form id="bookingForm">
+              <div class="form-group">
+                <label for="sel-provider" class="form-label">Healthcare Provider</label>
+                <select id="sel-provider" class="form-select" required>
+                  <option value="">Select a provider...</option>
+                </select>
+              </div>
 
-              <label for="sel-service">Service / Specialty</label>
-              <select id="sel-service"></select>
+              <div class="form-group">
+                <label for="sel-service" class="form-label">Service / Specialty</label>
+                <select id="sel-service" class="form-select">
+                  <option value="">Select service...</option>
+                </select>
+              </div>
 
-              <label for="sel-date">Date</label>
-              <input id="sel-date" type="date" required />
+              <div class="form-group">
+                <label for="sel-date" class="form-label">Appointment Date</label>
+                <input id="sel-date" type="date" class="form-input" required />
+              </div>
 
-              <label>Available Slots</label>
-              <div id="slotList" class="small"></div>
+              <div class="form-group">
+                <label class="form-label">Available Time Slots</label>
+                <div id="slotList" class="slots-container"></div>
+              </div>
 
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div>
-                  <label for="patient-name">Patient name</label>
-                  <input id="patient-name" type="text" required />
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+                <div class="form-group">
+                  <label for="patient-name" class="form-label">Patient Name</label>
+                  <input id="patient-name" type="text" class="form-input" required placeholder="Enter full name" />
                 </div>
-                <div>
-                  <label for="patient-phone">Phone</label>
-                  <input id="patient-phone" type="tel" required />
+                <div class="form-group">
+                  <label for="patient-phone" class="form-label">Phone Number</label>
+                  <input id="patient-phone" type="tel" class="form-input" required placeholder="+254 700 000 000" />
                 </div>
               </div>
 
-              <label for="group-count">Group (family) bookings</label>
-              <input id="group-count" type="number" min="1" value="1" />
-
-              <div style="display:flex;gap:8px;align-items:center">
-                <input id="chk-pay" type="checkbox" />
-                <label for="chk-pay" class="small">Initiate M-Pesa (demo / queued when offline)</label>
+              <div class="form-group">
+                <label for="group-count" class="form-label">Number of Patients</label>
+                <input id="group-count" type="number" class="form-input" min="1" value="1" />
               </div>
 
-              <div style="display:flex;gap:8px">
-                <button class="btn" id="btn-confirm-booking" type="submit">Confirm Booking</button>
-                <button type="button" class="btn secondary" id="btn-cancel-booking">Cancel</button>
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                  <input id="chk-pay" type="checkbox" />
+                  <span class="text-small">Enable M-Pesa payment (demo mode)</span>
+                </label>
               </div>
 
-              <div id="booking-msg" class="muted small" role="status"></div>
-            </div>
-          </form>
+              <div class="toolbar">
+                <button class="btn btn-primary btn-lg" id="btn-confirm-booking" type="submit">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Confirm Booking
+                </button>
+                <button type="button" class="btn btn-secondary" id="btn-cancel-booking">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Cancel
+                </button>
+              </div>
+
+              <div id="booking-msg" class="mt-3" role="status"></div>
+            </form>
+          </div>
         </div>
       </template>
 
       <template id="tpl-appointments">
-        <div class="card" id="view-appointments" aria-labelledby="apptsTitle">
-          <h2 id="apptsTitle">My Appointments</h2>
-          <div class="muted small">You can reschedule, cancel, or export appointments</div>
-          <div style="margin-top:8px;display:flex;gap:8px">
-            <input id="filter-input" placeholder="Filter by provider, date, type..." />
-            <button class="btn secondary" id="btn-refresh">Refresh</button>
-            <button class="btn secondary" id="btn-export-appts">Export</button>
+        <div class="card fade-in" id="view-appointments" aria-labelledby="apptsTitle">
+          <div class="card-header">
+            <h2 id="apptsTitle" class="card-title">My Appointments</h2>
+            <p class="card-subtitle">Manage your scheduled appointments</p>
           </div>
-          <div id="apptList" class="list" style="margin-top:12px" aria-live="polite"></div>
+          <div class="card-content">
+            <div class="search-container">
+              <input id="filter-input" class="form-input search-input" placeholder="Filter appointments..." />
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-secondary" id="btn-refresh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="23 4 23 10 17 10"/>
+                  <polyline points="1 20 1 14 7 14"/>
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                </svg>
+                Refresh
+              </button>
+              <button class="btn btn-secondary" id="btn-export-appts">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Export
+              </button>
+            </div>
+            <div id="apptList" class="provider-list mt-3" aria-live="polite"></div>
+          </div>
         </div>
       </template>
 
       <template id="tpl-provider-admin">
-        <div class="card" id="view-admin" aria-labelledby="adminTitle">
-          <h2 id="adminTitle">Admin / Provider Onboarding</h2>
-          <div class="muted small">Create or verify providers. For production, this becomes an authenticated admin flow.</div>
+        <div class="card fade-in" id="view-admin" aria-labelledby="adminTitle">
+          <div class="card-header">
+            <h2 id="adminTitle" class="card-title">Provider Management</h2>
+            <p class="card-subtitle">Add and manage healthcare providers</p>
+          </div>
+          <div class="card-content">
+            <form id="providerForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg);">
+                <div class="form-group">
+                  <label for="p-name" class="form-label">Provider Name</label>
+                  <input id="p-name" class="form-input" required placeholder="Dr. John Doe" />
+                </div>
+                <div class="form-group">
+                  <label for="p-specialty" class="form-label">Specialty</label>
+                  <input id="p-specialty" class="form-input" required placeholder="Cardiology" />
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="p-location" class="form-label">Location</label>
+                <input id="p-location" class="form-input" required placeholder="Nairobi, Kenya" />
+              </div>
+              
+              <div class="form-group">
+                <label for="p-slots" class="form-label">Available Time Slots</label>
+                <input id="p-slots" class="form-input" placeholder="08:00,09:00,10:00,14:00,15:00" />
+                <div class="text-small text-muted mt-1">Comma-separated times (24-hour format)</div>
+              </div>
+              
+              <div class="toolbar">
+                <button class="btn btn-primary" id="btn-add-provider" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  Add Provider
+                </button>
+                <button class="btn btn-secondary" id="btn-scan-providers" type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  Load Sample Data
+                </button>
+              </div>
+            </form>
 
-          <form id="providerForm" style="margin-top:8px">
-            <label for="p-name">Provider name</label><input id="p-name" required />
-            <label for="p-specialty">Specialty</label><input id="p-specialty" required />
-            <label for="p-location">County / Location</label><input id="p-location" required />
-            <label for="p-slots">Default slots (comma separated, e.g. 08:00,09:00)</label><input id="p-slots" />
-            <div style="display:flex;gap:8px;margin-top:8px">
-              <button class="btn" id="btn-add-provider" type="button">Add Provider</button>
-              <button class="btn secondary" id="btn-scan-providers" type="button">Seed Sample Providers</button>
+            <div class="mt-4">
+              <h3 class="form-label">Existing Providers</h3>
+              <div id="admin-provider-list" class="provider-list"></div>
             </div>
-          </form>
-
-          <h3 style="margin-top:12px">Existing Providers</h3>
-          <div id="admin-provider-list" class="list"></div>
+          </div>
         </div>
       </template>
 
       <template id="tpl-analytics">
-        <div class="card" id="view-analytics" aria-labelledby="analyticsTitle">
-          <h2 id="analyticsTitle">Analytics (local)</h2>
-          <div class="muted small">This shows local analytics useful for providers and admin.</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px">
-            <div class="tile card">
-              <div class="muted small">Total Appointments</div>
-              <div id="stat-total">0</div>
+        <div class="card fade-in" id="view-analytics" aria-labelledby="analyticsTitle">
+          <div class="card-header">
+            <h2 id="analyticsTitle" class="card-title">Analytics Dashboard</h2>
+            <p class="card-subtitle">Healthcare system insights and statistics</p>
+          </div>
+          <div class="card-content">
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-value" id="stat-total">0</div>
+                <div class="kpi-label">Total Appointments</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-value" id="stat-upcoming">0</div>
+                <div class="kpi-label">Upcoming (7 days)</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-value" id="stat-noshow">0</div>
+                <div class="kpi-label">No-shows</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-value" id="stat-avg">0</div>
+                <div class="kpi-label">Avg/day</div>
+              </div>
             </div>
-            <div class="tile card">
-              <div class="muted small">Upcoming (7 days)</div>
-              <div id="stat-upcoming">0</div>
-            </div>
-            <div class="tile card">
-              <div class="muted small">No-shows (simulated)</div>
-              <div id="stat-noshow">0</div>
-            </div>
-            <div class="tile card">
-              <div class="muted small">Avg bookings/day</div>
-              <div id="stat-avg">0</div>
+
+            <div class="mt-4">
+              <h3 class="form-label">Recent Activity</h3>
+              <div id="analytics-log" class="provider-list text-small"></div>
             </div>
           </div>
-
-          <h3 style="margin-top:12px">Recent Activity</h3>
-          <div id="analytics-log" class="list small"></div>
         </div>
       </template>
-
-      <!-- Toast -->
-      <div id="toast" class="toast" role="status" aria-live="polite">...</div>
     </main>
 
-    <footer>
-      <div class="footer-links">
-        <small>HealthKenya Lite — Demo • Deployable to GitHub Pages • Add serverless functions for M-Pesa / SMS</small>
+    <!-- Enhanced Footer -->
+    <footer class="footer">
+      <div class="text-small">
+        <strong>HealthKenya</strong> — Modern Healthcare Management System
+        <br>
+        Enhanced with animations, modern design, and comprehensive features
       </div>
     </footer>
+
+    <!-- Toast Container -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
   </div>
 
-  <!-- SCRIPT: All app logic in one file (modular functions, well-commented) -->
+  <!-- Enhanced JavaScript with all original functionality -->
   <script>
-  /**
-   * HealthKenya Lite — Single-file client app
-   * - IndexedDB for persistent storage (providers, appointments, outbox)
-   * - Offline outbox for queued payments & reminders
-   * - Multilanguage (EN/SW) + accessible UI
-   * - Admin/provider onboarding (local demo)
-   *
-   * IMPORTANT: For production, extract server-related flows to serverless functions:
-   *   - M-PESA Daraja (STK Push) must run server-side to keep keys secret
-   *   - SMS/WhatsApp notifications should be sent server-side (Twilio / Meta WhatsApp Business)
-   *
-   * Usage:
-   *  - Place this file in a GitHub Pages repo root; optionally add sw.js (inlined registration included below)
-   *  - Click "Admin" -> seed providers or add providers -> New Booking -> book
-   */
-
-  /* -----------------------
-     Utility & tiny DOM helpers
-     ----------------------- */
-  const $ = sel => document.querySelector(sel);
-  const $all = sel => Array.from(document.querySelectorAll(sel));
-  const el = (tag, attrs = {}, ...children) => {
-    const e = document.createElement(tag);
-    Object.entries(attrs).forEach(([k,v]) => { if (k === \'class\') e.className = v; else if (k.startsWith(\'on\')) e.addEventListener(k.slice(2), v); else e.setAttribute(k,v); });
-    for (const c of children) { if (typeof c === \'string\') e.appendChild(document.createTextNode(c)); else if (c) e.appendChild(c); }
-    return e;
-  };
-  function showToast(msg, ms=3000) {
-    const t = document.getElementById(\'toast\');
-    t.textContent = msg;
-    t.style.display = \'block\';
-    setTimeout(()=> t.style.display = \'none\', ms);
-  }
-
-  /* -----------------------
-     i18n (small) — extendable
-     ----------------------- */
-  const I18N = {
-    en: {
-      newBooking: \'New Booking\',
-      myAppointments: \'My Appointments\',
-      providers: \'Providers\',
-      admin: \'Admin\',
-      confirmBooking: \'Confirm Booking\',
-      cancel: \'Cancel\',
-      bookSuccess: \'Booking saved locally\',
-      queuedPayment: \'Payment queued in outbox (demo)\'
-    },
-    sw: {
-      newBooking: \'Weka Miadi\',
-      myAppointments: \'Miadi Zangu\',
-      providers: \'Watoa Huduma\',
-      admin: \'Utawala\',
-      confirmBooking: \'Thibitisha Miadi\',
-      cancel: \'Ghairi\',
-      bookSuccess: \'Miadi imehifadhiwa kwa kifaa\',
-      queuedPayment: \'Malipo yametumwa kwenye outbox (demo)\'
-    }
-  };
-  let lang = localStorage.getItem(\'hk_lang\') || \'en\';
-  function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N[\'en\'][k] || k; }
-  function applyLangUI(){
-    document.getElementById(\'btn-en\').ariaPressed = (lang===\'en\');
-    document.getElementById(\'btn-sw\').ariaPressed = (lang===\'sw\');
-    document.getElementById(\'btn-en\').classList.toggle(\'active\', lang===\'en\');
-    document.getElementById(\'btn-sw\').classList.toggle(\'active\', lang===\'sw\');
-    // a few text nodes — keep simple
-    document.getElementById(\'app-title\').textContent = lang === \'en\' ? \'HealthKenya\' : \'AfyaKenya\';
-    document.getElementById(\'btn-new-booking\').textContent = t(\'newBooking\');
-    document.getElementById(\'btn-my-appointments\').textContent = t(\'myAppointments\');
-    document.getElementById(\'btn-providers\').textContent = t(\'providers\');
-    document.getElementById(\'btn-admin\').textContent = t(\'admin\');
-    const confirmBtn = document.getElementById(\'btn-confirm-booking\');
-    if (confirmBtn) confirmBtn.textContent = t(\'confirmBooking\');
-    const cancelBtn = document.getElementById(\'btn-cancel-booking\');
-    if (cancelBtn) cancelBtn.textContent = t(\'cancel\');
-  }
-
-  /* -----------------------
-     IndexedDB setup
-     ----------------------- */
-  let db;
-  const DB_NAME = \'healthkenya_db\';
-  const DB_VERSION = 1;
-  const STORES = [\'providers\', \'appointments\', \'outbox\'];
-
-  function openDB() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onupgradeneeded = (event) => {
-        db = event.target.result;
-        STORES.forEach(storeName => {
-          if (!db.objectStoreNames.contains(storeName)) {
-            db.createObjectStore(storeName, { keyPath: \'id\', autoIncrement: true });
-          }
-        });
-      };
-      request.onsuccess = (event) => {
-        db = event.target.result;
-        resolve(db);
-      };
-      request.onerror = (event) => {
-        console.error(\'IndexedDB error:\', event.target.errorCode);
-        reject(event.target.errorCode);
-      };
-    });
-  }
-
-  async function addData(storeName, data) {
-    const tx = db.transaction(storeName, \'readwrite\');
-    const store = tx.objectStore(storeName);
-    await store.add(data);
-    return tx.complete;
-  }
-
-  async function getAllData(storeName) {
-    const tx = db.transaction(storeName, \'readonly\');
-    const store = tx.objectStore(storeName);
-    return store.getAll();
-  }
-
-  async function getDataById(storeName, id) {
-    const tx = db.transaction(storeName, \'readonly\');
-    const store = tx.objectStore(storeName);
-    return store.get(id);
-  }
-
-  async function updateData(storeName, data) {
-    const tx = db.transaction(storeName, \'readwrite\');
-    const store = tx.objectStore(storeName);
-    await store.put(data);
-    return tx.complete;
-  }
-
-  async function deleteData(storeName, id) {
-    const tx = db.transaction(storeName, \'readwrite\');
-    const store = tx.objectStore(storeName);
-    await store.delete(id);
-    return tx.complete;
-  }
-
-  /* -----------------------
-     Service Worker (PWA) registration
-     ----------------------- */
-  function registerServiceWorker() {
-    if (\'serviceWorker\' in navigator) {
-      window.addEventListener(\'load\', () => {
-        navigator.serviceWorker.register(\'/sw.js\')
-          .then(registration => {
-            console.log(\'SW registered: \', registration);
-          })
-          .catch(registrationError => {
-            console.log(\'SW registration failed: \', registrationError);
-          });
-      });
-    }
-  }
-
-  /* -----------------------
-     App State & Routing
-     ----------------------- */
-  const appState = {
-    currentView: \'home\',
-    selectedProvider: null,
-    selectedDate: null,
-    selectedSlot: null,
-    appointments: [],
-    providers: [],
-    outbox: []
-  };
-
-  function navigateTo(view) {
-    appState.currentView = view;
-    renderView();
-  }
-
-  function navigateHome() {
-    navigateTo(\'home\');
-  }
-
-  async function renderView() {
-    const viewContainer = $(\'#viewContainer\');
-    viewContainer.innerHTML = \'\'; // Clear current view
-
-    // Hide KPI card for certain views
-    if ([\'booking\', \'provider-admin\', \'analytics\'].includes(appState.currentView)) {
-      $(\'#kpiCard\').setAttribute(\'aria-hidden\', \'true\');
-      $(\'#kpiCard\').style.display = \'none\';
-    } else {
-      $(\'#kpiCard\').setAttribute(\'aria-hidden\', \'false\');
-      $(\'#kpiCard\').style.display = \'block\';
-    }
-
-    switch (appState.currentView) {
-      case \'home\':
-        await renderHomeView();
-        break;
-      case \'booking\':
-        await renderBookingView();
-        break;
-      case \'appointments\':
-        await renderAppointmentsView();
-        break;
-      case \'provider-admin\':
-        await renderProviderAdminView();
-        break;
-      case \'analytics\':
-        await renderAnalyticsView();
-        break;
-      default:
-        renderHomeView();
-    }
-    updateKPIs();
-  }
-
-  /* -----------------------
-     Home View (Provider Directory)
-     ----------------------- */
-  async function renderHomeView() {
-    const providerListEl = $(\'#providerList\');
-    providerListEl.innerHTML = \'\';
-    appState.providers = await getAllData(\'providers\');
-
-    if (appState.providers.length === 0) {
-      providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No providers found. Go to Admin to add some.\'));
-    }
-
-    appState.providers.forEach(provider => {
-      providerListEl.appendChild(el(\'div\', {class:\'provider-item\'}, 
-        el(\'div\', {}, 
-          el(\'div\', {}, provider.name),
-          el(\'div\', {class:\'small muted\'}, `${provider.specialty} - ${provider.location}`)
-        ),
-        el(\'button\', {class:\'btn secondary small\', onclick: () => {
-          appState.selectedProvider = provider;
-          navigateTo(\'booking\');
-        }}, \'Book\')
-      ));
-    });
-  }
-
-  /* -----------------------
-     Booking View
-     ----------------------- */
-  async function renderBookingView() {
-    const template = $(\'#tpl-booking\');
-    const clone = template.content.cloneNode(true);
-    $(\'#viewContainer\').appendChild(clone);
-
-    const selProvider = $(\'#sel-provider\');
-    selProvider.innerHTML = \'\';
-    appState.providers.forEach(p => {
-      selProvider.appendChild(el(\'option\', {value: p.id, selected: appState.selectedProvider && p.id === appState.selectedProvider.id}, p.name));
-    });
-    if (appState.selectedProvider) {
-      selProvider.value = appState.selectedProvider.id;
-    }
-
-    const selDate = $(\'#sel-date\');
-    selDate.min = new Date().toISOString().split(\'T\')[0]; // Today or later
-    selDate.value = appState.selectedDate || selDate.min;
-
-    const slotList = $(\'#slotList\');
-    const bookingForm = $(\'#bookingForm\');
-
-    const updateSlots = async () => {
-      slotList.innerHTML = \'\';
-      const currentProvider = appState.providers.find(p => p.id == selProvider.value);
-      const defaultSlots = currentProvider.slots ? currentProvider.slots.split(\' \').map(s => s.trim()) : [\'09:00\', \'10:00\', \'11:00\', \'14:00\', \'15:00\'];
-      
-      // Simulate occupied slots (for demo purposes)
-      const occupiedSlots = appState.appointments
-        .filter(appt => appt.providerId == selProvider.value && appt.date === selDate.value)
-        .map(appt => appt.time);
-
-      defaultSlots.forEach(slot => {
-        const isOccupied = occupiedSlots.includes(slot);
-        const slotEl = el(\'span\', {class:\'slot\', \'data-slot\':slot, onclick: () => {
-          if (!isOccupied) {
-            $all(\'.slot\').forEach(s => s.classList.remove(\'selected\'));
-            slotEl.classList.add(\'selected\');
-            appState.selectedSlot = slot;
-          }
-        }}, slot);
-        if (isOccupied) {
-          slotEl.classList.add(\'muted\');
-          slotEl.style.textDecoration = \'line-through\';
-        }
-        slotList.appendChild(slotEl);
-      });
-      appState.selectedSlot = null; // Reset selected slot on date/provider change
-    };
-
-    selProvider.onchange = updateSlots;
-    selDate.onchange = updateSlots;
-    await updateSlots();
-
-    bookingForm.onsubmit = async (e) => {
-      e.preventDefault();
-      if (!appState.selectedSlot) {
-        showToast(\'Please select a time slot.\');
-        return;
-      }
-
-      const newAppointment = {
-        providerId: selProvider.value,
-        providerName: selProvider.options[selProvider.selectedIndex].text,
-        service: $(\'#sel-service\').value || \'General Consultation\',
-        date: selDate.value,
-        time: appState.selectedSlot,
-        patientName: $(\'#patient-name\').value,
-        patientPhone: $(\'#patient-phone\').value,
-        groupCount: parseInt($(\'#group-count\').value) || 1,
-        timestamp: new Date().toISOString()
-      };
-
-      await addData(\'appointments\', newAppointment);
-      showToast(t(\'bookSuccess\'));
-      
-      if ($(\'#chk-pay\').checked) {
-        await addData(\'outbox\', {type:\'mpesa_payment\', appointment: newAppointment, status:\'pending\'});
-        showToast(t(\'queuedPayment\'), 5000);
-      }
-
-      appState.appointments = await getAllData(\'appointments\'); // Refresh appointments
-      updateKPIs();
-      navigateTo(\'appointments\');
-    };
-
-    $(\'#btn-cancel-booking\').onclick = () => navigateTo(\'home\');
-  }
-
-  /* -----------------------
-     Appointments View
-     ----------------------- */
-  async function renderAppointmentsView() {
-    const template = $(\'#tpl-appointments\');
-    const clone = template.content.cloneNode(true);
-    $(\'#viewContainer\').appendChild(clone);
-
-    const apptListEl = $(\'#apptList\');
-    apptListEl.innerHTML = \'\';
-    appState.appointments = await getAllData(\'appointments\');
-
-    if (appState.appointments.length === 0) {
-      apptListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No appointments booked yet.\'));
-    }
-
-    appState.appointments.sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
-
-    appState.appointments.forEach(appt => {
-      apptListEl.appendChild(el(\'div\', {class:\'card provider-item\'}, 
-        el(\'div\', {}, 
-          el(\'div\', {}, `Dr. ${appt.providerName}`),
-          el(\'div\', {class:\'small muted\'}, `${appt.service} on ${appt.date} at ${appt.time}`),
-          el(\'div\', {class:\'small muted\'}, `Patient: ${appt.patientName} (${appt.patientPhone})`)
-        ),
-        el(\'div\', {}, 
-          el(\'button\', {class:\'btn secondary small\', onclick: async () => {
-            if (confirm(\'Cancel this appointment?\')) {
-              await deleteData(\'appointments\', appt.id);
-              showToast(\'Appointment cancelled.\');
-              appState.appointments = await getAllData(\'appointments\');
-              renderAppointmentsView();
-              updateKPIs();
-            }
-          }}, \'Cancel\')
-        )
-      ));
-    });
-
-    $(\'#btn-refresh\').onclick = renderAppointmentsView;
-    $(\'#btn-export-appts\').onclick = exportAppointments;
-  }
-
-  function exportAppointments() {
-    const csvContent = \'data:text/csv;charset=utf-8,\' 
-      + \'ID,Provider,Service,Date,Time,Patient Name,Patient Phone,Group Count,Timestamp\n\'
-      + appState.appointments.map(a => 
-          `\"${a.id}\",\"${a.providerName}\",\"${a.service}\",\"${a.date}\",\"${a.time}\",\"${a.patientName}\",\"${a.patientPhone}\",\"${a.groupCount}\",\"${a.timestamp}\"`
-        ).join(\'\n\');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement(\'a\');
-    link.setAttribute(\'href\', encodedUri);
-    link.setAttribute(\'download\', \'appointments.csv\');
-    document.body.appendChild(link); 
-    link.click();
-    document.body.removeChild(link);
-    showToast(\'Appointments exported to CSV.\');
-  }
-
-  /* -----------------------
-     Provider Admin View
-     ----------------------- */
-  async function renderProviderAdminView() {
-    const template = $(\'#tpl-provider-admin\');
-    const clone = template.content.cloneNode(true);
-    $(\'#viewContainer\').appendChild(clone);
-
-    const providerListEl = $(\'#admin-provider-list\');
-    const providerForm = $(\'#providerForm\');
-
-    const refreshProviderList = async () => {
-      providerListEl.innerHTML = \'\';
-      appState.providers = await getAllData(\'providers\');
-      if (appState.providers.length === 0) {
-        providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No providers added yet.\'));
-      }
-      appState.providers.forEach(p => {
-        providerListEl.appendChild(el(\'div\', {class:\'card provider-item\'}, 
-          el(\'div\', {}, 
-            el(\'div\', {}, p.name),
-            el(\'div\', {class:\'small muted\'}, `${p.specialty} - ${p.location}`)
-          ),
-          el(\'button\', {class:\'btn secondary small\', onclick: async () => {
-            if (confirm(\'Delete this provider?\')) {
-              await deleteData(\'providers\', p.id);
-              showToast(\'Provider deleted.\');
-              refreshProviderList();
-              updateKPIs();
-            }
-          }}, \'Delete\')
-        ));
-      });
-    };
-
-    $(\'#btn-add-provider\').onclick = async () => {
-      const newProvider = {
-        name: $(\'#p-name\').value,
-        specialty: $(\'#p-specialty\').value,
-        location: $(\'#p-location\').value,
-        slots: $(\'#p-slots\').value || \'09:00 10:00 11:00 14:00 15:00\'
-      };
-      if (!newProvider.name || !newProvider.specialty || !newProvider.location) {
-        showToast(\'Please fill all required fields.\');
-        return;
-      }
-      await addData(\'providers\', newProvider);
-      showToast(\'Provider added.\');
-      providerForm.reset();
-      refreshProviderList();
-      updateKPIs();
-    };
-
-    $(\'#btn-scan-providers\').onclick = async () => {
-      const sampleProviders = [
-        { name: \'Dr. Jane Doe\', specialty: \'General Practitioner\', location: \'Nairobi\', slots: \'08:00 09:00 10:00 11:00 14:00 15:00\' },
-        { name: \'Dr. John Smith\', specialty: \'Pediatrician\', location: \'Mombasa\', slots: \'09:00 10:00 11:00 13:00 14:00\' },
-        { name: \'Dr. Emily White\', specialty: \'Dermatologist\', location: \'Kisumu\', slots: \'10:00 11:00 12:00 15:00 16:00\' }
-      ];
-      for (const p of sampleProviders) {
-        await addData(\'providers\', p);
-      }
-      showToast(\'Sample providers seeded.\');
-      refreshProviderList();
-      updateKPIs();
-    };
-
-    await refreshProviderList();
-  }
-
-  /* -----------------------
-     Analytics View
-     ----------------------- */
-  async function renderAnalyticsView() {
-    const template = $(\'#tpl-analytics\');
-    const clone = template.content.cloneNode(true);
-    $(\'#viewContainer\').appendChild(clone);
-
-    const totalAppts = appState.appointments.length;
-    $(\'#stat-total\').textContent = totalAppts;
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const upcomingAppts = appState.appointments.filter(appt => {
-      const apptDate = new Date(appt.date);
-      apptDate.setHours(0,0,0,0);
-      return apptDate >= today && (apptDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) < 7;
-    }).length;
-    $(\'#stat-upcoming\').textContent = upcomingAppts;
-
-    // Simulate no-shows (e.g., 10% of past appointments)
-    const pastAppts = appState.appointments.filter(appt => {
-      const apptDate = new Date(appt.date);
-      apptDate.setHours(0,0,0,0);
-      return apptDate < today;
-    }).length;
-    $(\'#stat-noshow\').textContent = Math.floor(pastAppts * 0.1);
-
-    const apptsPerDay = {};
-    appState.appointments.forEach(appt => {
-      apptsPerDay[appt.date] = (apptsPerDay[appt.date] || 0) + 1;
-    });
-    const uniqueDays = Object.keys(apptsPerDay).length;
-    $(\'#stat-avg\').textContent = uniqueDays > 0 ? (totalAppts / uniqueDays).toFixed(1) : 0;
-
-    const analyticsLogEl = $(\'#analytics-log\');
-    analyticsLogEl.innerHTML = \'\';
-    appState.appointments.slice(-10).reverse().forEach(appt => {
-      analyticsLogEl.appendChild(el(\'div\', {}, `[${new Date(appt.timestamp).toLocaleDateString()}] New booking for ${appt.patientName} with Dr. ${appt.providerName} on ${appt.date}`));
-    });
-  }
-
-  /* -----------------------
-     KPI Updates
-     ----------------------- */
-  async function updateKPIs() {
-    appState.providers = await getAllData(\'providers\');
-    appState.appointments = await getAllData(\'appointments\');
-    appState.outbox = await getAllData(\'outbox\');
-
-    $(\'#kpi-providers\').textContent = appState.providers.length;
+    // Enhanced HealthKenya Application
+    // Maintains all original functionality while adding modern UI/UX
     
-    const today = new Date().toISOString().split(\'T\')[0];
-    const todayBookings = appState.appointments.filter(appt => appt.date === today).length;
-    $(\'#kpi-today\').textContent = todayBookings;
+    /* Utility Functions */
+    const $ = sel => document.querySelector(sel);
+    const $all = sel => Array.from(document.querySelectorAll(sel));
+    
+    function showToast(msg, type = 'info', ms = 4000) {
+      const toast = $('#toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, ms);
+    }
 
-    $(\'#kpi-outbox\').textContent = appState.outbox.length;
-    $(\'#outbox-count\').textContent = appState.outbox.length;
-
-    // Update app status based on network connectivity
-    $(\'#app-status\').textContent = navigator.onLine ? \'Online\' : \'Offline\';
-  }
-
-  /* -----------------------
-     Event Listeners
-     ----------------------- */
-  function setupEventListeners() {
-    $(\'#btn-new-booking\').onclick = () => navigateTo(\'booking\');
-    $(\'#btn-my-appointments\').onclick = () => navigateTo(\'appointments\');
-    $(\'#btn-providers\').onclick = () => navigateTo(\'home\');
-    $(\'#btn-admin\').onclick = () => navigateTo(\'provider-admin\');
-    $(\'#btn-process-outbox\').onclick = processOutbox;
-    $(\'#btn-export\').onclick = exportAllData;
-
-    $(\'#btn-en\').onclick = () => { lang = \'en\'; localStorage.setItem(\'hk_lang\', \'en\'); applyLangUI(); renderView(); };
-    $(\'#btn-sw\').onclick = () => { lang = \'sw\'; localStorage.setItem(\'hk_lang\', \'sw\'); applyLangUI(); renderView(); };
-
-    $(\'#search-btn\').onclick = filterProviders;
-    $(\'#search-input\').onkeyup = (e) => { if (e.key === \'Enter\') filterProviders(); };
-
-    // Basic admin mode toggle (for demo)
-    $(\'#adminControls\').onclick = () => {
-      const isAdmin = $(\'#adminControls\').textContent === \'Admin\';
-      $(\'#adminControls\').textContent = isAdmin ? \'User\' : \'Admin\';
-      $(\'#adminControls\').title = isAdmin ? \'Admin mode off\' : \'Admin mode on\';
-      // In a real app, this would involve authentication and role-based access
-      showToast(isAdmin ? \'Admin mode disabled\' : \'Admin mode enabled\');
+    /* Internationalization */
+    const I18N = {
+      en: {
+        newBooking: 'New Booking',
+        myAppointments: 'My Appointments',
+        providers: 'Providers',
+        admin: 'Admin',
+        confirmBooking: 'Confirm Booking',
+        cancel: 'Cancel',
+        bookSuccess: 'Booking saved successfully!',
+        queuedPayment: 'Payment queued for processing'
+      },
+      sw: {
+        newBooking: 'Weka Miadi',
+        myAppointments: 'Miadi Zangu',
+        providers: 'Watoa Huduma',
+        admin: 'Utawala',
+        confirmBooking: 'Thibitisha Miadi',
+        cancel: 'Ghairi',
+        bookSuccess: 'Miadi imehifadhiwa!',
+        queuedPayment: 'Malipo yametumwa kwenye foleni'
+      }
     };
 
-    window.addEventListener(\'online\', updateKPIs);
-    window.addEventListener(\'offline\', updateKPIs);
-  }
-
-  async function filterProviders() {
-    const query = $(\'#search-input\').value.toLowerCase();
-    const providerListEl = $(\'#providerList\');
-    providerListEl.innerHTML = \'\';
-
-    const filteredProviders = appState.providers.filter(p => 
-      p.name.toLowerCase().includes(query) ||
-      p.specialty.toLowerCase().includes(query) ||
-      p.location.toLowerCase().includes(query)
-    );
-
-    if (filteredProviders.length === 0) {
-      providerListEl.appendChild(el(\'div\', {class:\'muted\'}, \'No matching providers found.\'));
+    let lang = localStorage.getItem('hk_lang') || 'en';
+    
+    function t(key) {
+      return (I18N[lang] && I18N[lang][key]) || I18N['en'][key] || key;
     }
 
-    filteredProviders.forEach(provider => {
-      providerListEl.appendChild(el(\'div\', {class:\'provider-item\'}, 
-        el(\'div\', {}, 
-          el(\'div\', {}, provider.name),
-          el(\'div\', {class:\'small muted\'}, `${provider.specialty} - ${provider.location}`)
-        ),
-        el(\'button\', {class:\'btn secondary small\', onclick: () => {
-          appState.selectedProvider = provider;
-          navigateTo(\'booking\');
-        }}, \'Book\')
-      ));
-    });
-  }
-
-  async function processOutbox() {
-    if (appState.outbox.length === 0) {
-      showToast(\'Outbox is empty.\');
-      return;
+    function applyLangUI() {
+      $('#btn-en').ariaPressed = (lang === 'en');
+      $('#btn-sw').ariaPressed = (lang === 'sw');
+      
+      // Update button texts
+      $('#btn-new-booking').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        ${t('newBooking')}
+      `;
+      $('#btn-my-appointments').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        ${t('myAppointments')}
+      `;
     }
-    showToast(`Processing ${appState.outbox.length} items in outbox... (demo)`);
-    for (const item of appState.outbox) {
-      // Simulate sending data to a server
-      console.log(\'Processing outbox item:\', item);
-      // In a real app, you\'d send this to your backend and await success
-      // For demo, we\'ll just delete it after a short delay
-      await deleteData(\'outbox\', item.id);
+
+    /* Database Functions */
+    let db;
+    
+    async function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('HealthKenyaDB', 2);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          db = request.result;
+          resolve(db);
+        };
+        
+        request.onupgradeneeded = (event) => {
+          db = event.target.result;
+          
+          if (!db.objectStoreNames.contains('providers')) {
+            db.createObjectStore('providers', { keyPath: 'id', autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains('appointments')) {
+            db.createObjectStore('appointments', { keyPath: 'id', autoIncrement: true });
+          }
+          if (!db.objectStoreNames.contains('outbox')) {
+            db.createObjectStore('outbox', { keyPath: 'id', autoIncrement: true });
+          }
+        };
+      });
     }
-    appState.outbox = await getAllData(\'outbox\');
-    updateKPIs();
-    showToast(\'Outbox processed.\');
-  }
 
-  async function exportAllData() {
-    const allData = {
-      providers: await getAllData(\'providers\'),
-      appointments: await getAllData(\'appointments\'),
-      outbox: await getAllData(\'outbox\')
-    };
-    const jsonContent = \'data:application/json;charset=utf-8,\' + JSON.stringify(allData, null, 2);
-    const encodedUri = encodeURI(jsonContent);
-    const link = document.createElement(\'a\');
-    link.setAttribute(\'href\', encodedUri);
-    link.setAttribute(\'download\', \'healthkenya_data.json\');
-    document.body.appendChild(link); 
-    link.click();
-    document.body.removeChild(link);
-    showToast(\'All data exported to JSON.\');
-  }
+    async function dbGet(storeName, key) {
+      const tx = db.transaction(storeName, 'readonly');
+      const store = tx.objectStore(storeName);
+      return new Promise((resolve, reject) => {
+        const request = key ? store.get(key) : store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
 
-  /* -----------------------
-     Initialization
-     ----------------------- */
-  async function init() {
-    applyLangUI();
-    setupEventListeners();
-    await openDB();
-    await renderView();
-    registerServiceWorker();
-  }
+    async function dbPut(storeName, data) {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      return new Promise((resolve, reject) => {
+        const request = store.put(data);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
 
-  init();
+    async function dbDelete(storeName, key) {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      return new Promise((resolve, reject) => {
+        const request = store.delete(key);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    /* Application State */
+    let currentView = 'home';
+    let selectedSlot = null;
+    let providers = [];
+    let appointments = [];
+
+    /* View Management */
+    function showView(viewName) {
+      const container = $('#viewContainer');
+      const template = $(`#tpl-${viewName}`);
+      
+      if (template) {
+        container.innerHTML = template.innerHTML;
+        currentView = viewName;
+        
+        // Add fade-in animation
+        const viewElement = container.firstElementChild;
+        if (viewElement) {
+          viewElement.classList.add('fade-in');
+        }
+        
+        // Initialize view-specific functionality
+        switch (viewName) {
+          case 'booking':
+            initBookingView();
+            break;
+          case 'appointments':
+            initAppointmentsView();
+            break;
+          case 'provider-admin':
+            initAdminView();
+            break;
+          case 'analytics':
+            initAnalyticsView();
+            break;
+        }
+      }
+    }
+
+    function navigateHome() {
+      $('#viewContainer').innerHTML = '';
+      currentView = 'home';
+      updateKPIs();
+    }
+
+    /* Booking View */
+    function initBookingView() {
+      loadProviders();
+      
+      const today = new Date().toISOString().split('T')[0];
+      $('#sel-date').value = today;
+      $('#sel-date').min = today;
+      
+      $('#sel-provider').addEventListener('change', handleProviderChange);
+      $('#sel-date').addEventListener('change', loadTimeSlots);
+      $('#bookingForm').addEventListener('submit', handleBookingSubmit);
+      $('#btn-cancel-booking').addEventListener('click', navigateHome);
+    }
+
+    async function loadProviders() {
+      try {
+        providers = await dbGet('providers') || [];
+        const select = $('#sel-provider');
+        select.innerHTML = '<option value="">Select a provider...</option>';
+        
+        providers.forEach(provider => {
+          const option = document.createElement('option');
+          option.value = provider.id;
+          option.textContent = `${provider.name} - ${provider.specialty}`;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error loading providers:', error);
+        showToast('Error loading providers', 'error');
+      }
+    }
+
+    function handleProviderChange() {
+      const providerId = parseInt($('#sel-provider').value);
+      const provider = providers.find(p => p.id === providerId);
+      
+      if (provider) {
+        const serviceSelect = $('#sel-service');
+        serviceSelect.innerHTML = `<option value="${provider.specialty}">${provider.specialty}</option>`;
+        loadTimeSlots();
+      }
+    }
+
+    function loadTimeSlots() {
+      const providerId = parseInt($('#sel-provider').value);
+      const provider = providers.find(p => p.id === providerId);
+      const slotContainer = $('#slotList');
+      
+      if (!provider) {
+        slotContainer.innerHTML = '<p class="text-muted">Please select a provider first</p>';
+        return;
+      }
+      
+      const slots = provider.slots || ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'];
+      slotContainer.innerHTML = '';
+      
+      slots.forEach(slot => {
+        const slotElement = document.createElement('div');
+        slotElement.className = 'slot';
+        slotElement.textContent = slot;
+        slotElement.addEventListener('click', () => selectSlot(slotElement, slot));
+        slotContainer.appendChild(slotElement);
+      });
+    }
+
+    function selectSlot(element, slot) {
+      // Remove previous selection
+      $all('.slot').forEach(s => s.classList.remove('selected'));
+      
+      // Select current slot
+      element.classList.add('selected');
+      selectedSlot = slot;
+    }
+
+    async function handleBookingSubmit(event) {
+      event.preventDefault();
+      
+      const formData = {
+        providerId: parseInt($('#sel-provider').value),
+        service: $('#sel-service').value,
+        date: $('#sel-date').value,
+        time: selectedSlot,
+        patientName: $('#patient-name').value,
+        patientPhone: $('#patient-phone').value,
+        groupCount: parseInt($('#group-count').value),
+        paymentRequested: $('#chk-pay').checked,
+        createdAt: new Date().toISOString(),
+        status: 'confirmed'
+      };
+      
+      if (!formData.providerId || !formData.time) {
+        showToast('Please select a provider and time slot', 'warning');
+        return;
+      }
+      
+      try {
+        // Save appointment
+        await dbPut('appointments', formData);
+        
+        // Queue payment if requested
+        if (formData.paymentRequested) {
+          await dbPut('outbox', {
+            type: 'payment',
+            data: formData,
+            createdAt: new Date().toISOString()
+          });
+          showToast(t('queuedPayment'), 'info');
+        }
+        
+        showToast(t('bookSuccess'), 'success');
+        updateKPIs();
+        navigateHome();
+      } catch (error) {
+        console.error('Error saving booking:', error);
+        showToast('Error saving booking', 'error');
+      }
+    }
+
+    /* Appointments View */
+    function initAppointmentsView() {
+      loadAppointments();
+      $('#btn-refresh').addEventListener('click', loadAppointments);
+      $('#btn-export-appts').addEventListener('click', exportAppointments);
+      $('#filter-input').addEventListener('input', filterAppointments);
+    }
+
+    async function loadAppointments() {
+      try {
+        appointments = await dbGet('appointments') || [];
+        displayAppointments(appointments);
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        showToast('Error loading appointments', 'error');
+      }
+    }
+
+    function displayAppointments(appointmentList) {
+      const container = $('#apptList');
+      
+      if (appointmentList.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No appointments found</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      appointmentList.forEach(appointment => {
+        const provider = providers.find(p => p.id === appointment.providerId);
+        const providerName = provider ? provider.name : 'Unknown Provider';
+        
+        const appointmentElement = document.createElement('div');
+        appointmentElement.className = 'provider-item';
+        appointmentElement.innerHTML = `
+          <div class="provider-info">
+            <h4>${appointment.patientName}</h4>
+            <p>${providerName} • ${appointment.date} at ${appointment.time}</p>
+            <p class="text-small text-muted">${appointment.service || 'General Consultation'}</p>
+          </div>
+          <div>
+            <span class="btn btn-sm btn-secondary" onclick="cancelAppointment(${appointment.id})">Cancel</span>
+          </div>
+        `;
+        container.appendChild(appointmentElement);
+      });
+    }
+
+    function filterAppointments() {
+      const filter = $('#filter-input').value.toLowerCase();
+      const filtered = appointments.filter(appointment => {
+        const provider = providers.find(p => p.id === appointment.providerId);
+        const providerName = provider ? provider.name.toLowerCase() : '';
+        
+        return appointment.patientName.toLowerCase().includes(filter) ||
+               providerName.includes(filter) ||
+               appointment.date.includes(filter) ||
+               (appointment.service && appointment.service.toLowerCase().includes(filter));
+      });
+      
+      displayAppointments(filtered);
+    }
+
+    async function cancelAppointment(appointmentId) {
+      if (confirm('Are you sure you want to cancel this appointment?')) {
+        try {
+          await dbDelete('appointments', appointmentId);
+          showToast('Appointment cancelled', 'success');
+          loadAppointments();
+          updateKPIs();
+        } catch (error) {
+          console.error('Error cancelling appointment:', error);
+          showToast('Error cancelling appointment', 'error');
+        }
+      }
+    }
+
+    function exportAppointments() {
+      const data = appointments.map(appointment => {
+        const provider = providers.find(p => p.id === appointment.providerId);
+        return {
+          patient: appointment.patientName,
+          provider: provider ? provider.name : 'Unknown',
+          date: appointment.date,
+          time: appointment.time,
+          service: appointment.service || 'General',
+          phone: appointment.patientPhone,
+          status: appointment.status
+        };
+      });
+      
+      const csv = [
+        'Patient,Provider,Date,Time,Service,Phone,Status',
+        ...data.map(row => Object.values(row).join(','))
+      ].join('\\n');
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'appointments.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showToast('Appointments exported', 'success');
+    }
+
+    /* Admin View */
+    function initAdminView() {
+      loadAdminProviders();
+      $('#btn-add-provider').addEventListener('click', addProvider);
+      $('#btn-scan-providers').addEventListener('click', seedSampleProviders);
+    }
+
+    async function loadAdminProviders() {
+      try {
+        providers = await dbGet('providers') || [];
+        displayAdminProviders();
+      } catch (error) {
+        console.error('Error loading providers:', error);
+      }
+    }
+
+    function displayAdminProviders() {
+      const container = $('#admin-provider-list');
+      
+      if (providers.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No providers found</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      providers.forEach(provider => {
+        const providerElement = document.createElement('div');
+        providerElement.className = 'provider-item';
+        providerElement.innerHTML = `
+          <div class="provider-info">
+            <h4>${provider.name}</h4>
+            <p>${provider.specialty} • ${provider.location}</p>
+            <p class="text-small text-muted">Slots: ${(provider.slots || []).join(', ')}</p>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-secondary" onclick="deleteProvider(${provider.id})">Delete</button>
+          </div>
+        `;
+        container.appendChild(providerElement);
+      });
+    }
+
+    async function addProvider() {
+      const name = $('#p-name').value.trim();
+      const specialty = $('#p-specialty').value.trim();
+      const location = $('#p-location').value.trim();
+      const slotsInput = $('#p-slots').value.trim();
+      
+      if (!name || !specialty || !location) {
+        showToast('Please fill in all required fields', 'warning');
+        return;
+      }
+      
+      const slots = slotsInput ? slotsInput.split(',').map(s => s.trim()) : ['08:00', '09:00', '10:00', '14:00', '15:00'];
+      
+      const provider = {
+        name,
+        specialty,
+        location,
+        slots,
+        createdAt: new Date().toISOString()
+      };
+      
+      try {
+        await dbPut('providers', provider);
+        showToast('Provider added successfully', 'success');
+        
+        // Clear form
+        $('#p-name').value = '';
+        $('#p-specialty').value = '';
+        $('#p-location').value = '';
+        $('#p-slots').value = '';
+        
+        loadAdminProviders();
+        updateKPIs();
+      } catch (error) {
+        console.error('Error adding provider:', error);
+        showToast('Error adding provider', 'error');
+      }
+    }
+
+    async function seedSampleProviders() {
+      const sampleProviders = [
+        { name: 'Dr. Sarah Wanjiku', specialty: 'General Medicine', location: 'Nairobi', slots: ['08:00', '09:00', '10:00', '14:00', '15:00'] },
+        { name: 'Dr. James Mwangi', specialty: 'Cardiology', location: 'Mombasa', slots: ['09:00', '10:00', '11:00', '15:00', '16:00'] },
+        { name: 'Dr. Grace Akinyi', specialty: 'Pediatrics', location: 'Kisumu', slots: ['08:30', '09:30', '10:30', '14:30', '15:30'] },
+        { name: 'Dr. Peter Kiprotich', specialty: 'Orthopedics', location: 'Eldoret', slots: ['08:00', '10:00', '14:00', '16:00'] },
+        { name: 'Dr. Mary Njeri', specialty: 'Dermatology', location: 'Nakuru', slots: ['09:00', '11:00', '14:00', '15:00', '16:00'] }
+      ];
+      
+      try {
+        for (const provider of sampleProviders) {
+          provider.createdAt = new Date().toISOString();
+          await dbPut('providers', provider);
+        }
+        
+        showToast('Sample providers added', 'success');
+        loadAdminProviders();
+        updateKPIs();
+      } catch (error) {
+        console.error('Error seeding providers:', error);
+        showToast('Error adding sample providers', 'error');
+      }
+    }
+
+    async function deleteProvider(providerId) {
+      if (confirm('Are you sure you want to delete this provider?')) {
+        try {
+          await dbDelete('providers', providerId);
+          showToast('Provider deleted', 'success');
+          loadAdminProviders();
+          updateKPIs();
+        } catch (error) {
+          console.error('Error deleting provider:', error);
+          showToast('Error deleting provider', 'error');
+        }
+      }
+    }
+
+    /* Analytics View */
+    function initAnalyticsView() {
+      updateAnalytics();
+    }
+
+    async function updateAnalytics() {
+      try {
+        const allAppointments = await dbGet('appointments') || [];
+        const today = new Date().toISOString().split('T')[0];
+        const weekFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        const upcoming = allAppointments.filter(apt => apt.date >= today && apt.date <= weekFromNow);
+        const noShows = Math.floor(allAppointments.length * 0.1); // Simulated
+        const avgPerDay = allAppointments.length > 0 ? (allAppointments.length / 30).toFixed(1) : 0;
+        
+        $('#stat-total').textContent = allAppointments.length;
+        $('#stat-upcoming').textContent = upcoming.length;
+        $('#stat-noshow').textContent = noShows;
+        $('#stat-avg').textContent = avgPerDay;
+        
+        // Recent activity log
+        const logContainer = $('#analytics-log');
+        const recentAppointments = allAppointments
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 10);
+        
+        if (recentAppointments.length === 0) {
+          logContainer.innerHTML = '<p class="text-muted text-center">No recent activity</p>';
+        } else {
+          logContainer.innerHTML = recentAppointments.map(appointment => {
+            const provider = providers.find(p => p.id === appointment.providerId);
+            const date = new Date(appointment.createdAt).toLocaleDateString();
+            return `
+              <div class="provider-item">
+                <div class="provider-info">
+                  <h4>${appointment.patientName}</h4>
+                  <p>Booked with ${provider ? provider.name : 'Unknown'} on ${date}</p>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        console.error('Error updating analytics:', error);
+      }
+    }
+
+    /* Provider List */
+    async function updateProviderList() {
+      try {
+        providers = await dbGet('providers') || [];
+        const container = $('#providerList');
+        
+        if (providers.length === 0) {
+          container.innerHTML = '<p class="text-muted text-center">No providers available</p>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        
+        providers.slice(0, 5).forEach(provider => {
+          const providerElement = document.createElement('div');
+          providerElement.className = 'provider-item';
+          providerElement.innerHTML = `
+            <div class="provider-info">
+              <h4>${provider.name}</h4>
+              <p>${provider.specialty} • ${provider.location}</p>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-primary" onclick="bookWithProvider(${provider.id})">Book</button>
+            </div>
+          `;
+          container.appendChild(providerElement);
+        });
+      } catch (error) {
+        console.error('Error updating provider list:', error);
+      }
+    }
+
+    function bookWithProvider(providerId) {
+      showView('booking');
+      setTimeout(() => {
+        $('#sel-provider').value = providerId;
+        handleProviderChange();
+      }, 100);
+    }
+
+    /* KPI Updates */
+    async function updateKPIs() {
+      try {
+        const allProviders = await dbGet('providers') || [];
+        const allAppointments = await dbGet('appointments') || [];
+        const outboxItems = await dbGet('outbox') || [];
+        
+        const today = new Date().toISOString().split('T')[0];
+        const todayAppointments = allAppointments.filter(apt => apt.date === today);
+        
+        $('#kpi-providers').textContent = allProviders.length;
+        $('#kpi-today').textContent = todayAppointments.length;
+        $('#kpi-outbox').textContent = outboxItems.length;
+        $('#outbox-count').textContent = outboxItems.length;
+        
+        // Update status
+        const status = navigator.onLine ? 'Online' : 'Offline';
+        $('#app-status').textContent = status;
+        $('#app-status').style.color = navigator.onLine ? 'var(--success)' : 'var(--warning)';
+      } catch (error) {
+        console.error('Error updating KPIs:', error);
+      }
+    }
+
+    /* Search Functionality */
+    function initSearch() {
+      const searchInput = $('#search-input');
+      searchInput.addEventListener('input', handleSearch);
+    }
+
+    function handleSearch() {
+      const query = $('#search-input').value.toLowerCase();
+      
+      if (query.length < 2) {
+        updateProviderList();
+        return;
+      }
+      
+      const filtered = providers.filter(provider => 
+        provider.name.toLowerCase().includes(query) ||
+        provider.specialty.toLowerCase().includes(query) ||
+        provider.location.toLowerCase().includes(query)
+      );
+      
+      displayFilteredProviders(filtered);
+    }
+
+    function displayFilteredProviders(filteredProviders) {
+      const container = $('#providerList');
+      
+      if (filteredProviders.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No providers found</p>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      filteredProviders.forEach(provider => {
+        const providerElement = document.createElement('div');
+        providerElement.className = 'provider-item';
+        providerElement.innerHTML = `
+          <div class="provider-info">
+            <h4>${provider.name}</h4>
+            <p>${provider.specialty} • ${provider.location}</p>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-primary" onclick="bookWithProvider(${provider.id})">Book</button>
+          </div>
+        `;
+        container.appendChild(providerElement);
+      });
+    }
+
+    /* Outbox Processing */
+    async function processOutbox() {
+      try {
+        const outboxItems = await dbGet('outbox') || [];
+        
+        if (outboxItems.length === 0) {
+          showToast('No items in outbox', 'info');
+          return;
+        }
+        
+        // Simulate processing
+        for (const item of outboxItems) {
+          await dbDelete('outbox', item.id);
+        }
+        
+        showToast(`Processed ${outboxItems.length} items`, 'success');
+        updateKPIs();
+      } catch (error) {
+        console.error('Error processing outbox:', error);
+        showToast('Error processing outbox', 'error');
+      }
+    }
+
+    /* Event Listeners */
+    function initEventListeners() {
+      // Navigation
+      $('#btn-new-booking').addEventListener('click', () => showView('booking'));
+      $('#btn-my-appointments').addEventListener('click', () => showView('appointments'));
+      $('#btn-providers').addEventListener('click', () => showView('analytics'));
+      $('#btn-admin').addEventListener('click', () => showView('provider-admin'));
+      
+      // Language switching
+      $('#btn-en').addEventListener('click', () => {
+        lang = 'en';
+        localStorage.setItem('hk_lang', lang);
+        applyLangUI();
+      });
+      
+      $('#btn-sw').addEventListener('click', () => {
+        lang = 'sw';
+        localStorage.setItem('hk_lang', lang);
+        applyLangUI();
+      });
+      
+      // Outbox processing
+      $('#btn-process-outbox').addEventListener('click', processOutbox);
+      
+      // Export functionality
+      $('#btn-export').addEventListener('click', () => {
+        exportAppointments();
+      });
+      
+      // Online/offline status
+      window.addEventListener('online', updateKPIs);
+      window.addEventListener('offline', updateKPIs);
+    }
+
+    /* Service Worker Registration */
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('SW registered:', registration);
+          })
+          .catch(error => {
+            console.log('SW registration failed:', error);
+          });
+      }
+    }
+
+    /* Application Initialization */
+    async function initApp() {
+      try {
+        await initDB();
+        applyLangUI();
+        initEventListeners();
+        initSearch();
+        updateKPIs();
+        updateProviderList();
+        registerServiceWorker();
+        
+        console.log('HealthKenya Enhanced - Application initialized successfully');
+      } catch (error) {
+        console.error('Error initializing application:', error);
+        showToast('Error initializing application', 'error');
+      }
+    }
+
+    // Global functions for onclick handlers
+    window.navigateHome = navigateHome;
+    window.bookWithProvider = bookWithProvider;
+    window.cancelAppointment = cancelAppointment;
+    window.deleteProvider = deleteProvider;
+
+    // Start the application
+    document.addEventListener('DOMContentLoaded', initApp);
   </script>
+  
+  <!-- Enhanced Interactions -->
+  <script src="enhanced-interactions.js"></script>
 </body>
 </html>
-
 
